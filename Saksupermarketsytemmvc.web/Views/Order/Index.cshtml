@@ -22,6 +22,8 @@
             </tr>
         </thead>
         <tbody>
+            @if (Model != null && Model.Count > 0)
+{
             @foreach (var order in Model)
             {
                 <tr>
@@ -39,6 +41,12 @@
                         <a asp-action="Delete" asp-route-id="@order.OrderId" class="btn btn-sm btn-danger">Delete</a>
                     </td>
                 </tr>
+            }}
+            else
+            {
+            <tr>
+                <td colspan="6" class="text-center">No customers found.</td>
+            </tr>
             }
         </tbody>
     </table>
