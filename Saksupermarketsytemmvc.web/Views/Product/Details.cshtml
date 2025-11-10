@@ -1,0 +1,47 @@
+﻿@model Saksupermarketsytemmvc.web.Models.Product
+
+<h1>Product Details</h1>
+<hr />
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-4">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-8">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt class="col-sm-4">
+            Category
+        </dt>
+        <dd class="col-sm-8">
+            @(Model.Category?.CategoryName ?? "N/A")
+        </dd>
+
+        <dt class="col-sm-4">
+            @Html.DisplayNameFor(model => model.UnitPrice)
+        </dt>
+        <dd class="col-sm-8">
+            @Html.DisplayFor(model => model.UnitPrice)
+        </dd>
+
+        <dt class="col-sm-4">
+            @Html.DisplayNameFor(model => model.StockQty)
+        </dt>
+        <dd class="col-sm-8">
+            @Html.DisplayFor(model => model.StockQty)
+        </dd>
+
+        <dt class="col-sm-4">
+            @Html.DisplayNameFor(model => model.ExpiryDate)
+        </dt>
+        <dd class="col-sm-8">
+            @Model.ExpiryDate?.ToShortDateString()
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-warning">Edit</a> |
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

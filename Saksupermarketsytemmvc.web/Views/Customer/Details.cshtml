@@ -1,0 +1,15 @@
+﻿@model Saksupermarketsytemmvc.web.Models.Customer
+
+<h2>Customer Details</h2>
+<hr />
+
+<div class="card p-3">
+    <p><strong>Name:</strong> @Model.CustomerName</p>
+    <p><strong>Email:</strong> @Model.CustEmail</p>
+    <p><strong>Phone:</strong> @Model.CustPhone</p>
+    <p><strong>Address:</strong> @Model.CustAddress</p>
+    <p><strong>Loyalty Points:</strong> @Model.LoyaltyPoints</p>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-warning mt-3">Edit</a>
+<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>

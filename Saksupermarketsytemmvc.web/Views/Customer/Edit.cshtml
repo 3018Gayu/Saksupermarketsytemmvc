@@ -1,0 +1,42 @@
+﻿@model Saksupermarketsytemmvc.web.Models.Customer
+
+<h2>Edit Customer</h2>
+<hr />
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="CustomerId" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="CustomerName" class="form-label"></label>
+        <input asp-for="CustomerName" class="form-control" />
+        <span asp-validation-for="CustomerName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CustEmail" class="form-label"></label>
+        <input asp-for="CustEmail" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CustPhone" class="form-label"></label>
+        <input asp-for="CustPhone" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CustAddress" class="form-label"></label>
+        <input asp-for="CustAddress" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="LoyaltyPoints" class="form-label"></label>
+        <input asp-for="LoyaltyPoints" type="number" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Update</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

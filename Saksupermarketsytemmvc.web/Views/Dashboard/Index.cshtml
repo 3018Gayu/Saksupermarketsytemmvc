@@ -1,0 +1,48 @@
+﻿@model Saksupermarketsytemmvc.web.Controllers.DashboardViewModel
+@{
+    ViewData["Title"] = "Super Market Dashboard";
+}
+
+<div class="text-center">
+    <h2 class="mt-4 mb-4 text-primary"><i class="bi bi-bar-chart-line"></i> SAKSOFT SUPERMARKET SYSTEM DASHBOARD</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-2 card text-center m-2 p-3 shadow-sm">
+            <h5>Products</h5>
+            <h2 class="text-primary">@Model.ProductCount</h2>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary btn-sm">View</a>
+        </div>
+
+        <div class="col-md-2 card text-center m-2 p-3 shadow-sm">
+            <h5>Categories</h5>
+            <h2 class="text-success">@Model.CategoryCount</h2>
+            <a asp-controller="Category" asp-action="Index" class="btn btn-outline-success btn-sm">View</a>
+        </div>
+
+        <div class="col-md-2 card text-center m-2 p-3 shadow-sm">
+            <h5>Suppliers</h5>
+            <h2 class="text-warning">@Model.SupplierCount</h2>
+            <a asp-controller="Supplier" asp-action="Index" class="btn btn-outline-warning btn-sm">View</a>
+        </div>
+
+        <div class="col-md-2 card text-center m-2 p-3 shadow-sm">
+            <h5>Customers</h5>
+            <h2 class="text-info">@Model.CustomerCount</h2>
+            <a asp-controller="Customer" asp-action="Index" class="btn btn-outline-info btn-sm">View</a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-3 card text-center m-2 p-4 shadow-sm">
+            <h5>Total Orders</h5>
+            <h2 class="text-danger">@Model.OrderCount</h2>
+            <a asp-controller="Order" asp-action="Index" class="btn btn-outline-danger btn-sm">View</a>
+        </div>
+
+        <div class="col-md-3 card text-center m-2 p-4 shadow-sm">
+            <h5>Users</h5>
+            <h2 class="text-secondary">@Model.UserCount</h2>
+            <a asp-controller="User" asp-action="Index" class="btn btn-outline-secondary btn-sm">View</a>
+        </div>
+    </div>
+</div>
