@@ -1,51 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin,Inventory Manager")]
     public class SupplierController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
+        public SupplierController(SaksoftSupermarketSystemContext context) => _context = context;
 
-        public SupplierController(SaksoftSupermarketSystemContext context)
-        {
-            _context = context;
-        }
-
-        // GET: Supplier
         public async Task<IActionResult> Index()
         {
             var suppliers = await _context.Suppliers.ToListAsync();
-
-            if (TempData["SuccessMessage"] != null)
-                ViewBag.SuccessMessage = TempData["SuccessMessage"];
-            if (TempData["ErrorMessage"] != null)
-                ViewBag.ErrorMessage = TempData["ErrorMessage"];
-
+            ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(suppliers);
         }
 
-        // GET: Supplier/Details/{id}
-        public async Task<IActionResult> Details(int id)
-        {
-            var supplier = await _context.Suppliers.FirstOrDefaultAsync(s => s.SupplierId == id);
-            if (supplier == null)
-                return NotFound();
-
-            return View(supplier);
-        }
-
-        // GET: Supplier/Create
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // POST: Supplier/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Supplier supplier)
@@ -60,57 +37,38 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(supplier);
         }
 
-        // GET: Supplier/Edit/{id}
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var supplier = await _context.Suppliers.FindAsync(id);
-            if (supplier == null)
-                return NotFound();
-
+            if (supplier == null) return NotFound();
             return View(supplier);
         }
 
-        // POST: Supplier/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Supplier supplier)
         {
-            if (id != supplier.SupplierId)
-                return NotFound();
-
+            if (id != supplier.SupplierId) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(supplier);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Supplier updated successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateException ex)
-                {
-                    ModelState.AddModelError("", $"Database error: {ex.InnerException?.Message ?? ex.Message}");
-                }
+                _context.Update(supplier);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Supplier updated successfully!";
+                return RedirectToAction(nameof(Index));
             }
             return View(supplier);
         }
 
-        // GET: Supplier/Delete/{id}
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var supplier = await _context.Suppliers.FirstOrDefaultAsync(s => s.SupplierId == id);
-            if (supplier == null)
-                return NotFound();
-
-            if (TempData["ErrorMessage"] != null)
-                ViewBag.ErrorMessage = TempData["ErrorMessage"];
-
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null) return NotFound();
+            ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(supplier);
         }
 
-        // POST: Supplier/DeleteConfirmed
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -126,7 +84,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 }
                 catch (DbUpdateException)
                 {
-                    TempData["ErrorMessage"] = "Cannot delete this supplier because it is referenced in other records.";
+                    TempData["ErrorMessage"] = "Cannot delete this supplier because it is referenced elsewhere.";
                     return RedirectToAction(nameof(Delete), new { id });
                 }
             }

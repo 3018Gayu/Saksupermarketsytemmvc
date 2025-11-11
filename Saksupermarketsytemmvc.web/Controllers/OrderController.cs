@@ -1,135 +1,113 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin,Cashier")]
     public class OrderController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
+        public OrderController(SaksoftSupermarketSystemContext context) => _context = context;
 
-        public OrderController(SaksoftSupermarketSystemContext context)
+        public async Task<IActionResult> Index()
         {
-            _context = context;
-        }
-
-        // GET: Order
-        public IActionResult Index()
-        {
-            var orders = _context.Orders
-                .Include(o => o.Customer) // eager load customer info
-                .ToList();
-
+            var orders = await _context.Orders.Include(o => o.Customer)
+                                              .ToListAsync();
+            if (TempData["SuccessMessage"] != null)
+                ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            if (TempData["ErrorMessage"] != null)
+                ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(orders);
         }
 
-        // GET: Order/Details/5
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var order = _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderDetails)
-                .FirstOrDefault(o => o.OrderId == id);
-
-            if (order == null)
-                return NotFound();
-
+            var order = await _context.Orders.Include(o => o.Customer)
+                                             .Include(o => o.OrderDetails)
+                                             .ThenInclude(od => od.Product)
+                                             .FirstOrDefaultAsync(o => o.OrderId == id);
+            if (order == null) return NotFound();
             return View(order);
         }
 
-        // GET: Order/Create
+        [HttpGet]
         public IActionResult Create()
         {
-            ViewData["Customers"] = _context.Customers.ToList();
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "Name");
+            ViewData["UserId"] = new SelectList(_context.Users, "UserId", "FullName");
             return View();
         }
 
-        // POST: Order/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Order order)
+        public async Task<IActionResult> Create(Order order)
         {
             if (ModelState.IsValid)
             {
-                // Calculate NetAmount = TotalAmount + TaxAmount - Discount (optional)
-                order.NetAmount = (order.TotalAmount ?? 0) + (order.TaxAmount ?? 0) - (order.Discount ?? 0);
-
                 _context.Orders.Add(order);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Order created successfully!";
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["Customers"] = _context.Customers.ToList();
             return View(order);
         }
 
-        // GET: Order/Edit/5
-        public IActionResult Edit(int id)
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            var order = _context.Orders.Find(id);
-            if (order == null)
-                return NotFound();
-
-            ViewData["Customers"] = _context.Customers.ToList();
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
             return View(order);
         }
 
-        // POST: Order/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Order order)
+        public async Task<IActionResult> Edit(int id, Order order)
         {
-            if (id != order.OrderId)
-                return BadRequest();
-
+            if (id != order.OrderId) return NotFound();
             if (ModelState.IsValid)
             {
-                var existingOrder = _context.Orders.Find(id);
-                if (existingOrder == null)
-                    return NotFound();
-
-                existingOrder.InvoiceNo = order.InvoiceNo;
-                existingOrder.CustomerId = order.CustomerId;
-                existingOrder.OrderDate = order.OrderDate;
-                existingOrder.TotalAmount = order.TotalAmount;
-                existingOrder.TaxAmount = order.TaxAmount;
-                existingOrder.Discount = order.Discount;
-                existingOrder.NetAmount = (order.TotalAmount ?? 0) + (order.TaxAmount ?? 0) - (order.Discount ?? 0);
-
-                _context.SaveChanges();
-
+                _context.Update(order);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Order updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["Customers"] = _context.Customers.ToList();
             return View(order);
         }
 
-        // GET: Order/Delete/5
-        public IActionResult Delete(int id)
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
         {
-            var order = _context.Orders
-                .Include(o => o.Customer)
-                .FirstOrDefault(o => o.OrderId == id);
-
-            if (order == null)
-                return NotFound();
-
+            var order = await _context.Orders.Include(o => o.Customer)
+                                             .FirstOrDefaultAsync(o => o.OrderId == id);
+            if (order == null) return NotFound();
             return View(order);
         }
 
-        // POST: Order/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var order = _context.Orders.Find(id);
-            if (order == null)
-                return NotFound();
-
-            _context.Orders.Remove(order);
-            _context.SaveChanges();
+            var order = await _context.Orders.FindAsync(id);
+            if (order != null)
+            {
+                try
+                {
+                    _context.Orders.Remove(order);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Order deleted successfully!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Cannot delete this order because it is referenced elsewhere.";
+                    return RedirectToAction(nameof(Delete), new { id });
+                }
+            }
             return RedirectToAction(nameof(Index));
         }
     }

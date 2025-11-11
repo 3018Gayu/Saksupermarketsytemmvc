@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
 using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -14,7 +16,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _context = context;
         }
 
-        // GET: User/Index
         public async Task<IActionResult> Index()
         {
             var users = await _context.Users.ToListAsync();
@@ -23,7 +24,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(users);
         }
 
-        // GET: User/Details/{id}
         public async Task<IActionResult> Details(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
@@ -31,36 +31,23 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(user);
         }
 
-        // GET: User/Create
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // POST: User/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(User user)
         {
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "User created successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateException ex)
-                {
-                    ModelState.AddModelError("", $"Database error: {ex.InnerException?.Message ?? ex.Message}");
-                }
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "User created successfully!";
+                return RedirectToAction(nameof(Index));
             }
             return View(user);
         }
 
-        // GET: User/Edit/{id}
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -69,7 +56,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(user);
         }
 
-        // POST: User/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, User user)
@@ -78,42 +64,29 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
-                    if (existingUser == null) return NotFound();
+                var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
+                if (existingUser == null) return NotFound();
 
-                    // Keep old password if left blank
-                    if (string.IsNullOrEmpty(user.PasswordHash))
-                    {
-                        user.PasswordHash = existingUser.PasswordHash;
-                    }
+                if (string.IsNullOrEmpty(user.PasswordHash))
+                    user.PasswordHash = existingUser.PasswordHash;
 
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "User updated successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateException ex)
-                {
-                    ModelState.AddModelError("", $"Database error: {ex.InnerException?.Message ?? ex.Message}");
-                }
+                _context.Update(user);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "User updated successfully!";
+                return RedirectToAction(nameof(Index));
             }
             return View(user);
         }
 
-        // GET: User/Delete/{id}
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
             if (user == null) return NotFound();
-
             ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(user);
         }
 
-        // POST: User/DeleteConfirmed
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

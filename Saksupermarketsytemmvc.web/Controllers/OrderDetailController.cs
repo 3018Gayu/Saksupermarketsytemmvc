@@ -1,25 +1,48 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
+using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin,Cashier")]
     public class OrderDetailController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
-        public OrderDetailController(SaksoftSupermarketSystemContext context)
+        public OrderDetailController(SaksoftSupermarketSystemContext context) => _context = context;
+
+        public async Task<IActionResult> Index(int orderId)
         {
-            _context = context;
+            var orderDetails = await _context.OrderDetails
+                                             .Include(od => od.Product)
+                                             .Include(od => od.Order)
+                                             .Where(od => od.OrderId == orderId)
+                                             .ToListAsync();
+            return View(orderDetails);
         }
 
-        // GET: OrderDetail
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public IActionResult Create(int orderId)
         {
-            // Ensure we pass an actual list to the view. If the DbSet is null, return empty list.
-            var list = _context?.OrderDetails != null
-                ? await _context.OrderDetails.ToListAsync()
-                : new List<OrderDetail>();
-            return View(list);
+            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name");
+            ViewData["OrderId"] = orderId;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(OrderDetail orderDetail)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.OrderDetails.Add(orderDetail);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Order detail added successfully!";
+                return RedirectToAction(nameof(Index), new { orderId = orderDetail.OrderId });
+            }
+            return View(orderDetail);
         }
     }
 }

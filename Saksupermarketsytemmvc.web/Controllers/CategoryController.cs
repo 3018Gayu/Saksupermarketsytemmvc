@@ -1,141 +1,92 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin,Inventory Manager")]
     public class CategoryController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
+        public CategoryController(SaksoftSupermarketSystemContext context) => _context = context;
 
-        public CategoryController(SaksoftSupermarketSystemContext context)
+        public async Task<IActionResult> Index()
         {
-            _context = context;
-        }
-
-        // =============================
-        // GET: Category/Index (Read)
-        // =============================
-        public IActionResult Index()
-        {
-            var categories = _context.Categories.ToList();
-
-            // Display success messages from TempData
-            if (TempData["SuccessMessage"] != null)
-                ViewBag.SuccessMessage = TempData["SuccessMessage"];
-
-            if (TempData["ErrorMessage"] != null)
-                ViewBag.ErrorMessage = TempData["ErrorMessage"];
-
+            var categories = await _context.Categories.ToListAsync();
+            ViewBag.SuccessMessage = TempData["SuccessMessage"];
+            ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(categories);
         }
 
-        // =============================
-        // GET: Category/Create
-        // =============================
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // =============================
-        // POST: Category/Create
-        // =============================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Category model)
+        public async Task<IActionResult> Create(Category category)
         {
             if (ModelState.IsValid)
             {
-                _context.Categories.Add(model);
-                _context.SaveChanges();
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Category created successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            return View(model);
+            return View(category);
         }
 
-        // =============================
-        // GET: Category/Edit/{id}
-        // =============================
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var category = _context.Categories.FirstOrDefault(x => x.CategoryId == id);
+            var category = await _context.Categories.FindAsync(id);
             if (category == null) return NotFound();
             return View(category);
         }
 
-        // =============================
-        // POST: Category/Edit
-        // =============================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Category model)
+        public async Task<IActionResult> Edit(int id, Category category)
         {
+            if (id != category.CategoryId) return NotFound();
             if (ModelState.IsValid)
             {
-                var category = _context.Categories.FirstOrDefault(x => x.CategoryId == model.CategoryId);
-                if (category == null) return NotFound();
-
-                category.CategoryName = model.CategoryName;
-                category.Description = model.Description;
-
-                _context.SaveChanges();
+                _context.Update(category);
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Category updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            return View(model);
-        }
-
-        // =============================
-        // GET: Category/Details/{id}
-        // =============================
-        public IActionResult Detail(int id)
-        {
-            var category = _context.Categories.FirstOrDefault(x => x.CategoryId == id);
-            if (category == null) return NotFound();
             return View(category);
         }
 
-        // =============================
-        // GET: Category/Delete/{id}
-        // =============================
         [HttpGet]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var category = _context.Categories.FirstOrDefault(x => x.CategoryId == id);
+            var category = await _context.Categories.FindAsync(id);
             if (category == null) return NotFound();
-
-            // Show error message if any from TempData
-            if (TempData["ErrorMessage"] != null)
-                ViewBag.ErrorMessage = TempData["ErrorMessage"];
-
+            ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(category);
         }
 
-        // =============================
-        // POST: Category/DeleteConfirmed
-        // =============================
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int CategoryId)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = _context.Categories.FirstOrDefault(x => x.CategoryId == CategoryId);
+            var category = await _context.Categories.FindAsync(id);
             if (category != null)
             {
-                // Check if related products exist for this category
-                bool hasProducts = _context.Products.Any(p => p.CategoryId == CategoryId);
-                if (hasProducts)
+                try
                 {
-                    TempData["ErrorMessage"] = "Cannot delete this category because it has associated products.";
-                    return RedirectToAction(nameof(Delete), new { id = CategoryId });
+                    _context.Categories.Remove(category);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Category deleted successfully!";
                 }
-
-                _context.Categories.Remove(category);
-                _context.SaveChanges();
-                TempData["SuccessMessage"] = "Category deleted successfully!";
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Cannot delete this category because it may be referenced elsewhere.";
+                    return RedirectToAction(nameof(Delete), new { id });
+                }
             }
             return RedirectToAction(nameof(Index));
         }

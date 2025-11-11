@@ -6,25 +6,25 @@
 
 <h2>Inventory Transactions</h2>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Add New Transaction</a>
-</p>
-
 @if (TempData["SuccessMessage"] != null)
 {
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Add New Transaction</a>
+</p>
 
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
             <th>ID</th>
             <th>Product</th>
-            <th>Type</th>
-            <th>Date</th>
             <th>Quantity</th>
+            <th>Type</th>
             <th>Remarks</th>
-            <th>Actions</th>
+            <th>Date</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -32,15 +32,15 @@
         {
             <tr>
                 <td>@item.TransId</td>
-                <td>@item.Product?.Name</td>
-                <td>@item.TransType</td>
-                <td>@item.TransDate?.ToString("yyyy-MM-dd")</td>
+                <td>@item.Product?.Name </td>
                 <td>@item.Quantity</td>
+                <td>@item.TransType</td>
                 <td>@item.Remarks</td>
+                <td>@item.TransDate?.ToString("yyyy-MM-dd")</td>
                 <td>
-                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.TransId">Details</a>
-                    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.TransId">Edit</a>
-                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.TransId">Delete</a>
+                    <a asp-action="Details" asp-route-id="@item.TransId" class="btn btn-info btn-sm">Details</a>
+                    <a asp-action="Edit" asp-route-id="@item.TransId" class="btn btn-warning btn-sm">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.TransId" class="btn btn-danger btn-sm">Delete</a>
                 </td>
             </tr>
         }

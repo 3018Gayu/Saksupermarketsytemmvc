@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Saksupermarketsytemmvc.web.Models;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
     public class DashboardController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;

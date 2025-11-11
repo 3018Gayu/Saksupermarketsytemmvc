@@ -1,41 +1,46 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.InventoryTransaction
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Edit Transaction";
 }
 
-<h2>Edit Inventory Transaction</h2>
+<h2>Edit Transaction</h2>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="TransId" />
-    <div class="form-group">
-        <label asp-for="ProductId"></label>
-        <select asp-for="ProductId" class="form-control" asp-items="@(new SelectList(ViewBag.Products, "ProductId", "Name", Model.ProductId))">
-            <option value="">--Select Product--</option>
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group mb-3">
+        <label asp-for="ProductId">Product</label>
+        <select asp-for="ProductId" class="form-control" asp-items="@(ViewBag.Products as SelectList)">
+            <option value="">-- Select Product --</option>
         </select>
+        <span asp-validation-for="ProductId" class="text-danger"></span>
     </div>
-    <div class="form-group">
-        <label asp-for="TransType"></label>
-        <input asp-for="TransType" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label asp-for="TransDate"></label>
-        <input asp-for="TransDate" type="date" class="form-control" />
-    </div>
-    <div class="form-group">
+
+    <div class="form-group mb-3">
         <label asp-for="Quantity"></label>
         <input asp-for="Quantity" class="form-control" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
     </div>
-    <div class="form-group">
+
+    <div class="form-group mb-3">
+        <label asp-for="TransType"></label>
+        <input asp-for="TransType" class="form-control" />
+        <span asp-validation-for="TransType" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
         <label asp-for="Remarks"></label>
         <input asp-for="Remarks" class="form-control" />
     </div>
-    <button type="submit" class="btn btn-success">Update</button>
+
+    <div class="form-group mb-3">
+        <label asp-for="TransDate"></label>
+        <input asp-for="TransDate" type="date" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Update Transaction</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
