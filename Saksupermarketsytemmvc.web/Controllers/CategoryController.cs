@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -10,8 +9,13 @@ namespace Saksupermarketsytemmvc.web.Controllers
     public class CategoryController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
-        public CategoryController(SaksoftSupermarketSystemContext context) => _context = context;
 
+        public CategoryController(SaksoftSupermarketSystemContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Category
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories.ToListAsync();
@@ -20,9 +24,11 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(categories);
         }
 
+        // GET: Category/Create
         [HttpGet]
         public IActionResult Create() => View();
 
+        // POST: Category/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
@@ -37,38 +43,72 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(category);
         }
 
+        // GET: Category/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category == null) return NotFound();
+            if (category == null)
+                return NotFound();
+
             return View(category);
         }
 
+        // POST: Category/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Category category)
         {
-            if (id != category.CategoryId) return NotFound();
+            if (id != category.CategoryId)
+                return NotFound();
+
             if (ModelState.IsValid)
             {
-                _context.Update(category);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Category updated successfully!";
+                try
+                {
+                    _context.Update(category);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Category updated successfully!";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Categories.Any(e => e.CategoryId == id))
+                        return NotFound();
+                    else
+                        throw;
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
         }
 
+        // ✅ NEW: GET: Category/Details/5
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.CategoryId == id);
+
+            if (category == null)
+                return NotFound();
+
+            return View(category);
+        }
+
+        // GET: Category/Delete/5
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category == null) return NotFound();
+            if (category == null)
+                return NotFound();
+
             ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(category);
         }
 
+        // POST: Category/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -88,6 +128,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
                     return RedirectToAction(nameof(Delete), new { id });
                 }
             }
+
             return RedirectToAction(nameof(Index));
         }
     }

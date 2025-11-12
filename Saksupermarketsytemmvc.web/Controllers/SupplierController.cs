@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -10,8 +9,12 @@ namespace Saksupermarketsytemmvc.web.Controllers
     public class SupplierController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
-        public SupplierController(SaksoftSupermarketSystemContext context) => _context = context;
+        public SupplierController(SaksoftSupermarketSystemContext context)
+        {
+            _context = context;
+        }
 
+        // GET: Supplier
         public async Task<IActionResult> Index()
         {
             var suppliers = await _context.Suppliers.ToListAsync();
@@ -20,9 +23,20 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(suppliers);
         }
 
+        // GET: Supplier/Details/5
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var supplier = await _context.Suppliers.FindAsync(id);
+            if (supplier == null) return NotFound();
+            return View(supplier);
+        }
+
+        // GET: Supplier/Create
         [HttpGet]
         public IActionResult Create() => View();
 
+        // POST: Supplier/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Supplier supplier)
@@ -37,6 +51,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(supplier);
         }
 
+        // GET: Supplier/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -45,21 +60,31 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(supplier);
         }
 
+        // POST: Supplier/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Supplier supplier)
         {
             if (id != supplier.SupplierId) return NotFound();
+
             if (ModelState.IsValid)
             {
-                _context.Update(supplier);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Supplier updated successfully!";
+                try
+                {
+                    _context.Update(supplier);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Supplier updated successfully!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Unable to update supplier.";
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(supplier);
         }
 
+        // GET: Supplier/Delete/5
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -69,6 +94,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(supplier);
         }
 
+        // POST: Supplier/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

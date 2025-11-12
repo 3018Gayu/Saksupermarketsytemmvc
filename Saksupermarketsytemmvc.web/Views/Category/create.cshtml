@@ -1,10 +1,10 @@
-﻿@model Saksupermarketsytemmvc.web.Models.Product
+﻿@model Saksupermarketsytemmvc.web.Models.Category
 
 @{
-    ViewData["Title"] = "Create Product";
+    ViewData["Title"] = "Create Category";
 }
 
-<h2>Create Product</h2>
+<h2>Create Category</h2>
 <hr />
 
 <div class="row">
@@ -12,39 +12,22 @@
         <form asp-action="Create" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+            <!-- Category Name -->
             <div class="mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="CategoryName" class="form-label">Category Name</label>
+                <input asp-for="CategoryName" class="form-control" placeholder="Enter category name" />
+                <span asp-validation-for="CategoryName" class="text-danger"></span>
             </div>
 
+            <!-- Description -->
             <div class="mb-3">
-                <label asp-for="CategoryId" class="form-label">Category</label>
-                <select asp-for="CategoryId" class="form-select" asp-items="@(ViewData["Categories"] as SelectList)">
-                    <option value="">-- Select Category --</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" placeholder="Enter category description (optional)"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="UnitPrice" class="form-label"></label>
-                <input asp-for="UnitPrice" class="form-control" />
-                <span asp-validation-for="UnitPrice" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="StockQty" class="form-label"></label>
-                <input asp-for="StockQty" class="form-control" />
-                <span asp-validation-for="StockQty" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="ExpiryDate" class="form-label"></label>
-                <input asp-for="ExpiryDate" type="date" class="form-control" />
-                <span asp-validation-for="ExpiryDate" class="text-danger"></span>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Create Product</button>
+            <!-- Buttons -->
+            <button type="submit" class="btn btn-primary">Create Category</button>
             <a asp-action="Index" class="btn btn-secondary">Cancel</a>
         </form>
     </div>

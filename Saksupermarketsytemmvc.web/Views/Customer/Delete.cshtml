@@ -1,47 +1,29 @@
-﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.Category>
+﻿@model Saksupermarketsytemmvc.web.Models.Customer
 
 @{
-    ViewData["Title"] = "Category List";
+    ViewData["Title"] = "Delete Customer";
 }
 
-<h1 class="mb-4">Category List</h1>
+<h2>Delete Customer</h2>
+<hr />
 
-<p class="text-end">
-    <a asp-action="Create" class="btn btn-primary">Create New Category</a>
-</p>
-
-@if (ViewBag.SuccessMessage != null)
+@if (ViewBag.ErrorMessage != null)
 {
-    <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
 
-<table class="table table-bordered table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Category Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.CategoryName</td>
-                    <td>@item.Description</td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.CategoryId" class="btn btn-warning btn-sm">Edit</a>
-                        <a asp-action="Detail" asp-route-id="@item.CategoryId" class="btn btn-info btn-sm">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.CategoryId" class="btn btn-danger btn-sm">Delete</a>
-                    </td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr><td colspan="3" class="text-center">No categories available.</td></tr>
-        }
-    </tbody>
-</table>
+<h4>Are you sure you want to delete this customer?</h4>
+
+<div class="card p-3 my-3">
+    <p><strong>Name:</strong> @Model.CustomerName</p>
+    <p><strong>Email:</strong> @Model.CustEmail</p>
+    <p><strong>Phone:</strong> @Model.CustPhone</p>
+    <p><strong>Address:</strong> @Model.CustAddress</p>
+    <p><strong>Loyalty Points:</strong> @Model.LoyaltyPoints</p>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="CustomerId" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

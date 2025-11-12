@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "Welcome Back";
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-4">Welcome Back, @ViewBag.UserName!</h1>
+    <p class="lead">You are logged in as <strong>@ViewBag.UserRole</strong>.</p>
+
+    <div class="mt-4">
+        <a class="btn btn-primary" href="@Url.Action("Index", "Dashboard")">Go to Dashboard</a>
+        <a class="btn btn-secondary" href="@Url.Action("Logout", "Account")">Logout</a>
+    </div>
+</div>
