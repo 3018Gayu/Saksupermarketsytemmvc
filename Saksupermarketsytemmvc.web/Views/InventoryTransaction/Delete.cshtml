@@ -1,29 +1,30 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.InventoryTransaction
 
-@{
-    ViewData["Title"] = "Delete Transaction";
-}
-
 <h2>Delete Transaction</h2>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+}
 
 <h4>Are you sure you want to delete this transaction?</h4>
 
 <dl class="row">
-    <dt class="col-sm-3">Transaction ID</dt>
-    <dd class="col-sm-9">@Model.TransId</dd>
-
     <dt class="col-sm-3">Product</dt>
-    <dd class="col-sm-9">@Model.Product?.Name ?? "N/A"</dd>
+    <dd class="col-sm-9">@Model.Product?.Name</dd>
 
     <dt class="col-sm-3">Quantity</dt>
     <dd class="col-sm-9">@Model.Quantity</dd>
 
     <dt class="col-sm-3">Type</dt>
     <dd class="col-sm-9">@Model.TransType</dd>
+
+    <dt class="col-sm-3">Date</dt>
+    <dd class="col-sm-9">@Model.TransDate?.ToString("yyyy-MM-dd")</dd>
 </dl>
 
-<form asp-action="Delete">
+<form asp-action="Delete" method="post">
     <input type="hidden" asp-for="TransId" />
-    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    <button type="submit" class="btn btn-danger">Delete</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>

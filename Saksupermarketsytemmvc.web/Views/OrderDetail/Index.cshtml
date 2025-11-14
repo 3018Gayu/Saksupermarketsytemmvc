@@ -1,15 +1,29 @@
-﻿@model List<OrderDetail>
-<h1 class="text-center mb-4">Order Detail List</h1>
+﻿@model List<Saksupermarketsytemmvc.web.Models.OrderDetail>
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<h2 class="text-center mb-4">Order Details</h2>
+
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+}
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+}
+
 <div class="mb-3">
-    <a asp-action="Create" class="btn btn-primary">Create New Order Detail</a>
+    <a asp-action="Create" asp-route-orderId="@ViewBag.OrderId" class="btn btn-primary">Add Order Detail</a>
 </div>
+
 <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-dark">
             <tr>
-                <th>Order Detail ID</th>
-                <th>Order ID</th>
-                <th>Product ID</th>
+                <th>Detail ID</th>
+                <th>Product</th>
                 <th>Quantity</th>
                 <th>Unit Price</th>
                 <th>Total Price</th>
@@ -17,30 +31,27 @@
             </tr>
         </thead>
         <tbody>
-            @if (Model != null && Model.Count > 0)
+            @if (Model?.Any() == true)
             {
-                foreach (var orderDetail in Model)
+                foreach (var item in Model)
                 {
                     <tr>
-                        <td>@orderDetail.Orderdetailsid</td>
-                        <td>@orderDetail.OrderId</td>
-                        <td>@orderDetail.ProductId</td>
-                        <td>@orderDetail.Quantity</td>
-                        <td>@string.Format("{0:C}", orderDetail.UnitPrice ?? 0m)</td>
-                        <td>@string.Format("{0:C}", orderDetail.TotalPrice ?? 0m)</td>
+                        <td>@item.Orderdetailsid</td>
+                        <td>@item.Product?.Name</td>
+                        <td>@item.Quantity</td>
+                        <td>@string.Format("{0:C}", item.UnitPrice)</td>
+                        <td>@string.Format("{0:C}", item.TotalPrice)</td>
                         <td>
-                            <a asp-action="Edit" asp-route-id="@orderDetail.Orderdetailsid" class="btn btn-sm btn-warning me-1">Edit</a>
-                            <a asp-action="Details" asp-route-id="@orderDetail.Orderdetailsid" class="btn btn-sm btn-info me-1">Details</a>
-                            <a asp-action="Delete" asp-route-id="@orderDetail.Orderdetailsid" class="btn btn-sm btn-danger">Delete</a>
+                            <a asp-action="Edit" asp-route-id="@item.Orderdetailsid" class="btn btn-sm btn-warning me-1">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.Orderdetailsid" class="btn btn-sm btn-info me-1">Details</a>
+                            <a asp-action="Delete" asp-route-id="@item.Orderdetailsid" class="btn btn-sm btn-danger">Delete</a>
                         </td>
                     </tr>
                 }
             }
             else
             {
-                <tr>
-                    <td colspan="7" class="text-center">No order details found.</td>
-                </tr>
+                <tr><td colspan="6" class="text-center">No order details found.</td></tr>
             }
         </tbody>
     </table>

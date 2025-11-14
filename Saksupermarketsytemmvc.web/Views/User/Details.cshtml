@@ -1,15 +1,25 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.User
 
-<h2>User Details</h2>
-<hr />
+<h2 class="text-info text-center fw-bold mb-4">
+    <i class="bi bi-person-badge-fill"></i> User Details
+</h2>
 
-<div class="card p-3">
-    <p><strong>User Name:</strong> @Model.UserName</p>
-    <p><strong>Email:</strong> @Model.UserEmail</p>
-    <p><strong>Password:</strong> @Model.PasswordHash</p>
-    <p><strong>Role:</strong> @Model.UserRole</p>
-    <p><strong>Status:</strong> @Model.Isactive</p>
+<div class="d-flex justify-content-center">
+    <div class="card shadow w-50 p-4">
+
+        <p><strong>Username:</strong> @Model.UserName</p>
+        <p><strong>Email:</strong> @Model.UserEmail</p>
+        <p><strong>Password:</strong> @Model.PasswordHash</p>
+        <p><strong>Role:</strong> @Model.UserRole</p>
+        <p><strong>Status:</strong> @Model.Isactive</p>
+
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-warning btn-lg">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left-circle"></i> Back
+            </a>
+        </div>
+    </div>
 </div>
-
-<a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-warning mt-3">Edit</a>
-<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>

@@ -1,0 +1,50 @@
+﻿@model Saksupermarketsytemmvc.web.Models.OrderDetail
+@{
+    ViewData["Title"] = "Add Order Detail";
+}
+
+<h2>Add Order Detail</h2>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+}
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="OrderId" />
+
+    <div class="form-group mb-3">
+        <label asp-for="ProductId" class="form-label">Product</label>
+        <select asp-for="ProductId" class="form-control" asp-items="ViewBag.ProductId">
+            <option value="">-- Select Product --</option>
+        </select>
+        <span asp-validation-for="ProductId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Quantity" class="form-label"></label>
+        <input asp-for="Quantity" class="form-control" type="number" step="1" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="UnitPrice" class="form-label"></label>
+        <input asp-for="UnitPrice" class="form-control" type="number" step="0.01" />
+        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="TotalPrice" class="form-label"></label>
+        <input asp-for="TotalPrice" class="form-control" type="number" step="0.01" />
+        <span asp-validation-for="TotalPrice" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Add</button>
+    <a asp-action="Index" asp-route-orderId="@Model.OrderId" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

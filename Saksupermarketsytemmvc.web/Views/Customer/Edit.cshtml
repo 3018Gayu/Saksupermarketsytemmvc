@@ -1,41 +1,53 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.Customer
 
-<h2>Edit Customer</h2>
-<hr />
+@{
+    ViewData["Title"] = "Edit Customer";
+}
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="CustomerId" />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<h2 class="text-warning mb-4 text-center"><i class="bi bi-pencil-square"></i> Edit Customer</h2>
 
-    <div class="mb-3">
-        <label asp-for="CustomerName" class="form-label"></label>
-        <input asp-for="CustomerName" class="form-control" />
-        <span asp-validation-for="CustomerName" class="text-danger"></span>
+<div class="d-flex justify-content-center">
+    <div class="card shadow-sm w-75 p-4">
+        <form asp-action="Edit" method="post" class="needs-validation" novalidate>
+            <input type="hidden" asp-for="CustomerId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="CustomerName" class="form-control" placeholder="Customer Name" />
+                <label asp-for="CustomerName"><i class="bi bi-person-fill"></i> Name</label>
+                <span asp-validation-for="CustomerName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="CustEmail" class="form-control" placeholder="Email" />
+                <label asp-for="CustEmail"><i class="bi bi-envelope-fill"></i> Email</label>
+                <span asp-validation-for="CustEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="CustPhone" class="form-control" placeholder="Phone" />
+                <label asp-for="CustPhone"><i class="bi bi-telephone-fill"></i> Phone</label>
+                <span asp-validation-for="CustPhone" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="CustAddress" class="form-control" placeholder="Address" />
+                <label asp-for="CustAddress"><i class="bi bi-geo-alt-fill"></i> Address</label>
+                <span asp-validation-for="CustAddress" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="LoyaltyPoints" class="form-control" type="number" min="0" placeholder="Loyalty Points" />
+                <label asp-for="LoyaltyPoints"><i class="bi bi-stars"></i> Loyalty Points</label>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-check-circle"></i> Update</button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg"><i class="bi bi-x-circle"></i> Cancel</a>
+            </div>
+        </form>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="CustEmail" class="form-label"></label>
-        <input asp-for="CustEmail" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="CustPhone" class="form-label"></label>
-        <input asp-for="CustPhone" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="CustAddress" class="form-label"></label>
-        <input asp-for="CustAddress" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="LoyaltyPoints" class="form-label"></label>
-        <input asp-for="LoyaltyPoints" type="number" class="form-control" />
-    </div>
-
-    <button type="submit" class="btn btn-success">Update</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

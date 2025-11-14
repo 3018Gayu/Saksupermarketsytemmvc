@@ -7,6 +7,11 @@
 
 <h2>Edit Order</h2>
 
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-warning">@ViewBag.ErrorMessage</div>
+}
+
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="OrderId" />
     <div class="form-group">
@@ -17,7 +22,8 @@
 
     <div class="form-group">
         <label asp-for="CustomerId">Customer</label>
-        <select asp-for="CustomerId" class="form-control" asp-items="@(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(customers, "CustomerId", "CustomerName", Model.CustomerId))">
+        <select asp-for="CustomerId" class="form-control"
+                asp-items="@(new SelectList(customers, "CustomerId", "CustomerName", Model.CustomerId))">
             <option value="">-- Select Customer --</option>
         </select>
         <span asp-validation-for="CustomerId" class="text-danger"></span>

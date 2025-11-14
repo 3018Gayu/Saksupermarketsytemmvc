@@ -1,48 +1,61 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.User
 
-<h2>Create User</h2>
-<hr />
+<h2 class="text-center text-primary fw-bold mb-4">
+    <i class="bi bi-person-plus-fill"></i> Create New User
+</h2>
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="d-flex justify-content-center">
+    <div class="card shadow p-4 w-50">
 
-    <div class="mb-3">
-        <label asp-for="UserName" class="form-label"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
+        <form asp-action="Create" method="post">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="UserName" class="form-control" placeholder="Username" />
+                <label asp-for="UserName"><i class="bi bi-person-fill"></i> Username</label>
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="UserEmail" class="form-control" placeholder="Email" />
+                <label asp-for="UserEmail"><i class="bi bi-envelope-fill"></i> Email</label>
+                <span asp-validation-for="UserEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Password" />
+                <label asp-for="PasswordHash"><i class="bi bi-key-fill"></i> Password</label>
+                <span asp-validation-for="PasswordHash" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="UserRole" class="form-control" placeholder="Role" />
+                <label asp-for="UserRole"><i class="bi bi-award-fill"></i> Role</label>
+                <span asp-validation-for="UserRole" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="Isactive" class="form-control">
+                    <option value="">-- Select Status --</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <label asp-for="Isactive"><i class="bi bi-check-circle-fill"></i> Status</label>
+                <span asp-validation-for="Isactive" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-success btn-lg"><i class="bi bi-save"></i> Save</button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-arrow-left-circle"></i> Cancel
+                </a>
+            </div>
+
+        </form>
+
     </div>
-
-    <div class="mb-3">
-        <label asp-for="UserEmail" class="form-label"></label>
-        <input asp-for="UserEmail" class="form-control" />
-        <span asp-validation-for="UserEmail" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="PasswordHash" class="form-label"></label>
-        <input asp-for="PasswordHash" type="password" class="form-control" />
-        <span asp-validation-for="PasswordHash" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="UserRole" class="form-label"></label>
-        <input asp-for="UserRole" class="form-control" />
-        <span asp-validation-for="UserRole" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Isactive" class="form-label">Status</label>
-        <select asp-for="Isactive" class="form-control">
-            <option value="">-- Select Status --</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-        </select>
-        <span asp-validation-for="Isactive" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-success">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

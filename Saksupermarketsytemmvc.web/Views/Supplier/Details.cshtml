@@ -1,13 +1,36 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.Supplier
 
-<h2>Supplier Details</h2>
-<hr />
+<h2 class="text-info text-center mb-4">
+    <i class="bi bi-eye-fill"></i> Supplier Details
+</h2>
 
-<div class="card p-3">
-    <p><strong>Name:</strong> @Model.Name</p>
-    <p><strong>Contact:</strong> @Model.Contact</p>
-    <p><strong>Address:</strong> @Model.Address</p>
+<div class="d-flex justify-content-center">
+    <div class="card shadow-sm w-75 p-4">
+
+        <div class="mb-3">
+            <h5><i class="bi bi-person-badge-fill text-primary"></i> Supplier Name</h5>
+            <p class="ms-4">@Model.Name</p>
+        </div>
+
+        <div class="mb-3">
+            <h5><i class="bi bi-telephone-fill text-success"></i> Contact</h5>
+            <p class="ms-4">@Model.Contact</p>
+        </div>
+
+        <div class="mb-3">
+            <h5><i class="bi bi-geo-alt-fill text-danger"></i> Address</h5>
+            <p class="ms-4">@Model.Address</p>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+            <a asp-action="Edit" asp-route-id="@Model.SupplierId" class="btn btn-warning btn-lg">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
+
+            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left-circle"></i> Back to List
+            </a>
+        </div>
+
+    </div>
 </div>
-
-<a asp-action="Edit" asp-route-id="@Model.SupplierId" class="btn btn-warning mt-3">Edit</a>
-<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>

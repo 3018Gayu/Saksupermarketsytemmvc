@@ -48,9 +48,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-                return NotFound();
-
+            if (category == null) return NotFound();
             return View(category);
         }
 
@@ -59,8 +57,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Category category)
         {
-            if (id != category.CategoryId)
-                return NotFound();
+            if (id != category.CategoryId) return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -77,22 +74,17 @@ namespace Saksupermarketsytemmvc.web.Controllers
                     else
                         throw;
                 }
-
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
         }
 
-        // ✅ NEW: GET: Category/Details/5
+        // GET: Category/Details/5
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(c => c.CategoryId == id);
-
-            if (category == null)
-                return NotFound();
-
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == id);
+            if (category == null) return NotFound();
             return View(category);
         }
 
@@ -101,9 +93,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-                return NotFound();
-
+            if (category == null) return NotFound();
             ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(category);
         }
@@ -128,7 +118,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
                     return RedirectToAction(nameof(Delete), new { id });
                 }
             }
-
             return RedirectToAction(nameof(Index));
         }
     }

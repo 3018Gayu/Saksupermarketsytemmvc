@@ -1,15 +1,21 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.Customer
 
-<h2>Customer Details</h2>
+@{
+    ViewData["Title"] = "Customer Details";
+}
+
+<h2 class="text-info mb-3"><i class="bi bi-info-circle"></i> Customer Details</h2>
 <hr />
 
-<div class="card p-3">
+<div class="card shadow-sm p-4 mb-3">
     <p><strong>Name:</strong> @Model.CustomerName</p>
     <p><strong>Email:</strong> @Model.CustEmail</p>
     <p><strong>Phone:</strong> @Model.CustPhone</p>
     <p><strong>Address:</strong> @Model.CustAddress</p>
-    <p><strong>Loyalty Points:</strong> @Model.LoyaltyPoints</p>
+    <p><strong>Loyalty Points:</strong> <span class="badge bg-primary">@Model.LoyaltyPoints</span></p>
 </div>
 
-<a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-warning mt-3">Edit</a>
-<a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-warning me-2"><i class="bi bi-pencil-square"></i> Edit</a>
+    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Back to List</a>
+</div>

@@ -4,31 +4,33 @@
     ViewData["Title"] = "Create Category";
 }
 
-<h2>Create Category</h2>
-<hr />
+<h2 class="text-primary mb-4"><i class="bi bi-plus-circle"></i> Create New Category</h2>
 
-<div class="row">
+<div class="row justify-content-center">
     <div class="col-md-6">
-        <form asp-action="Create" method="post">
+        <form asp-action="Create" method="post" class="shadow p-4 rounded bg-light">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <!-- Category Name -->
             <div class="mb-3">
                 <label asp-for="CategoryName" class="form-label">Category Name</label>
                 <input asp-for="CategoryName" class="form-control" placeholder="Enter category name" />
                 <span asp-validation-for="CategoryName" class="text-danger"></span>
             </div>
 
-            <!-- Description -->
             <div class="mb-3">
                 <label asp-for="Description" class="form-label">Description</label>
-                <textarea asp-for="Description" class="form-control" placeholder="Enter category description (optional)"></textarea>
+                <textarea asp-for="Description" class="form-control" placeholder="Enter description"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
-            <!-- Buttons -->
-            <button type="submit" class="btn btn-primary">Create Category</button>
-            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Create
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle"></i> Cancel
+                </a>
+            </div>
         </form>
     </div>
 </div>

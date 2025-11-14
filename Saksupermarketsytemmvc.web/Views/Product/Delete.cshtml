@@ -13,26 +13,14 @@
 
 <div>
     <dl class="row">
-        <dt class="col-sm-4">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-8">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Name)</dd>
 
-        <dt class="col-sm-4">
-            Category
-        </dt>
-        <dd class="col-sm-8">
-            @(Model.Category?.CategoryName ?? "N/A")
-        </dd>
+        <dt class="col-sm-4">Category</dt>
+        <dd class="col-sm-8">@Model.Category?.CategoryName ?? "N/A"</dd>
 
-        <dt class="col-sm-4">
-            @Html.DisplayNameFor(model => model.UnitPrice)
-        </dt>
-        <dd class="col-sm-8">
-            @Html.DisplayFor(model => model.UnitPrice)
-        </dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UnitPrice)</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.UnitPrice)</dd>
     </dl>
 
     <form asp-action="Delete" method="post">

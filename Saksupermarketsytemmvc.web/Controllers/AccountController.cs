@@ -6,7 +6,6 @@ using Saksupermarketsytemmvc.web.Models.ViewModels;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -21,6 +20,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _config = config;
         }
 
+        // ================== LOGIN (GET) ==================
         [HttpGet]
         public IActionResult Login()
         {
@@ -65,9 +65,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View();
         }
 
+        // ================== LOGIN (POST) ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string Role)
         {
             if (!ModelState.IsValid)
                 return View(model);
@@ -81,7 +82,14 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 return View(model);
             }
 
-            // Generate JWT
+            // ✅ Check if the selected role matches the user’s stored role
+            if (!string.Equals(user.UserRole, Role, StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("", "Role mismatch. Please select your correct role.");
+                return View(model);
+            }
+
+            // ✅ Generate JWT Token
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
 
@@ -106,6 +114,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
+            // ✅ Save JWT token to cookie
             HttpContext.Response.Cookies.Append("jwtToken", tokenString, new CookieOptions
             {
                 HttpOnly = true,
@@ -117,13 +126,14 @@ namespace Saksupermarketsytemmvc.web.Controllers
             TempData["UserName"] = user.UserName;
             TempData["UserRole"] = user.UserRole;
 
-            // Redirect to Welcome page
             return RedirectToAction("Welcome");
         }
 
+        // ================== REGISTER (GET) ==================
         [HttpGet]
         public IActionResult Register() => View();
 
+        // ================== REGISTER (POST) ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -152,6 +162,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
+        // ================== FORGOT PASSWORD ==================
         [HttpGet]
         public IActionResult ForgotPassword() => View();
 
@@ -173,6 +184,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
+        // ================== LOGOUT ==================
         [HttpGet]
         public IActionResult Logout()
         {
@@ -180,6 +192,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
+        // ================== WELCOME PAGE ==================
         [HttpGet]
         public IActionResult Welcome()
         {

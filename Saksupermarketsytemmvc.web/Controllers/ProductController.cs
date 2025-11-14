@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -17,77 +16,59 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _context = context;
         }
 
-        // ✅ GET: Product
+        // GET: Product
         public async Task<IActionResult> Index()
         {
             var products = await _context.Products
                 .Include(p => p.Category)
                 .ToListAsync();
 
-            ViewBag.SuccessMessage = TempData["SuccessMessage"];
-            ViewBag.ErrorMessage = TempData["ErrorMessage"];
             return View(products);
         }
 
-        // ✅ GET: Product/Create
-        [HttpGet]
-        public IActionResult Create()
+        // GET: Product/Create
+        public async Task<IActionResult> Create()
         {
-            // Only Admin or Inventory Manager can create products
-            if (!User.IsInRole("Admin") && !User.IsInRole("Inventory Manager"))
-                return Forbid();
-
-            // 🟢 FIXED: Use "CategoryName" not "Name"
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
-
+            var categories = await _context.Categories.ToListAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName");
             return View();
         }
 
-        // ✅ POST: Product/Create
+        // POST: Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product)
         {
-            if (!User.IsInRole("Admin") && !User.IsInRole("Inventory Manager"))
-                return Forbid();
-
             if (ModelState.IsValid)
             {
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Product created successfully!";
+                TempData["Message"] = "Product added successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Rebind categories if ModelState fails
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName", product.CategoryId);
+            var categories = await _context.Categories.ToListAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", product.CategoryId);
             return View(product);
         }
 
-        // ✅ GET: Product/Edit/5
-        [HttpGet]
+        // GET: Product/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            if (!User.IsInRole("Admin") && !User.IsInRole("Inventory Manager"))
-                return Forbid();
-
             var product = await _context.Products.FindAsync(id);
             if (product == null)
                 return NotFound();
 
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName", product.CategoryId);
+            var categories = await _context.Categories.ToListAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", product.CategoryId);
             return View(product);
         }
 
-        // ✅ POST: Product/Edit/5
+        // POST: Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Product product)
         {
-            if (!User.IsInRole("Admin") && !User.IsInRole("Inventory Manager"))
-                return Forbid();
-
             if (id != product.ProductId)
                 return NotFound();
 
@@ -97,30 +78,26 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 {
                     _context.Update(product);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Product updated successfully!";
+                    TempData["Message"] = "Product updated successfully!";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Products.Any(e => e.ProductId == id))
+                    if (!await ProductExists(product.ProductId))
                         return NotFound();
                     else
                         throw;
                 }
-
-                return RedirectToAction(nameof(Index));
             }
 
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName", product.CategoryId);
+            var categories = await _context.Categories.ToListAsync();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", product.CategoryId);
             return View(product);
         }
 
-        // ✅ GET: Product/Delete/5
-        [HttpGet]
+        // GET: Product/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            if (!User.IsInRole("Admin") && !User.IsInRole("Inventory Manager"))
-                return Forbid();
-
             var product = await _context.Products
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
@@ -131,31 +108,26 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return View(product);
         }
 
-        // ✅ POST: Product/Delete/5
+        // POST: Product/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!User.IsInRole("Admin") && !User.IsInRole("Inventory Manager"))
-                return Forbid();
-
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                try
-                {
-                    _context.Products.Remove(product);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Product deleted successfully!";
-                }
-                catch (DbUpdateException)
-                {
-                    TempData["ErrorMessage"] = "Cannot delete this product because it is referenced elsewhere.";
-                    return RedirectToAction(nameof(Delete), new { id });
-                }
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
+                TempData["Message"] = "Product deleted successfully!";
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method to check if a product exists
+        private async Task<bool> ProductExists(int id)
+        {
+            return await _context.Products.AnyAsync(e => e.ProductId == id);
         }
     }
 }

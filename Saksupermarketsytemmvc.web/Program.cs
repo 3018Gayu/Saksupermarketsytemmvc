@@ -21,7 +21,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // ✅ Read token from cookie
+    // Read token from cookie
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -70,9 +70,16 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Default route
+// Single default route (combined)
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
+
+// Optional: route specifically for Product controller if you want
+// This is not strictly necessary because the default route handles it,
+// but you can define named routes for clarity
+app.MapControllerRoute(
+    name: "product",
+    pattern: "{controller=Product}/{action=Index}/{id?}");
 
 app.Run();
