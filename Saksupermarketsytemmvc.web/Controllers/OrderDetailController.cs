@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier")]
+    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
     public class OrderDetailController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -18,129 +18,166 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _context = context;
         }
 
-        // ========== INDEX ==========
-        public async Task<IActionResult> Index(int orderId)
+        // GET: OrderDetail
+        public async Task<IActionResult> Index()
         {
             var orderDetails = await _context.OrderDetails
-                                             .Include(od => od.Product)
                                              .Include(od => od.Order)
-                                             .Where(od => od.OrderId == orderId)
+                                             .Include(od => od.Product)
                                              .ToListAsync();
-
-            ViewBag.OrderId = orderId;
-
-            if (TempData["SuccessMessage"] != null)
-                ViewBag.SuccessMessage = TempData["SuccessMessage"];
-            if (TempData["ErrorMessage"] != null)
-                ViewBag.ErrorMessage = TempData["ErrorMessage"];
-
             return View(orderDetails);
         }
 
-        // ========== DETAILS ==========
-        public async Task<IActionResult> Details(int id)
+        // GET: OrderDetail/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
-            var orderDetail = await _context.OrderDetails
-                                            .Include(od => od.Product)
-                                            .Include(od => od.Order)
-                                            .FirstOrDefaultAsync(od => od.Orderdetailsid == id);
+            if (id == null) return NotFound();
 
+            var orderDetail = await _context.OrderDetails
+                                            .Include(od => od.Order)
+                                            .Include(od => od.Product)
+                                            .FirstOrDefaultAsync(od => od.OrderDetailId == id);
             if (orderDetail == null) return NotFound();
 
             return View(orderDetail);
         }
 
-        // ========== CREATE ==========
-        [HttpGet]
-        public IActionResult Create(int orderId)
+        // GET: OrderDetail/Create
+        public IActionResult Create()
         {
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name");
-            ViewData["OrderId"] = orderId;
-            return View(new OrderDetail { OrderId = orderId });
+            ViewBag.Orders = _context.Orders
+                                     .Select(o => new SelectListItem
+                                     {
+                                         Value = o.OrderId.ToString(),
+                                         Text = o.InvoiceNo
+                                     }).ToList();
+
+            ViewBag.Products = _context.Products
+                                       .Select(p => new SelectListItem
+                                       {
+                                           Value = p.ProductId.ToString(),
+                                           Text = p.Name
+                                       }).ToList();
+
+            return View();
         }
 
+        // POST: OrderDetail/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(OrderDetail orderDetail)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
-                ViewData["OrderId"] = orderDetail.OrderId;
-                return View(orderDetail);
-            }
+                // Calculate TotalPrice
+                orderDetail.TotalPrice = (orderDetail.Quantity ?? 0) * (orderDetail.UnitPrice ?? 0);
 
-            try
-            {
                 _context.OrderDetails.Add(orderDetail);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Order detail added successfully!";
-                return RedirectToAction(nameof(Index), new { orderId = orderDetail.OrderId });
+                return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateException)
-            {
-                ViewBag.ErrorMessage = "Unable to add order detail. Please check related data.";
-                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
-                ViewData["OrderId"] = orderDetail.OrderId;
-                return View(orderDetail);
-            }
-        }
 
-        // ========== EDIT ==========
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            var orderDetail = await _context.OrderDetails.FindAsync(id);
-            if (orderDetail == null) return NotFound();
+            ViewBag.Orders = _context.Orders
+                                     .Select(o => new SelectListItem
+                                     {
+                                         Value = o.OrderId.ToString(),
+                                         Text = o.InvoiceNo
+                                     }).ToList();
 
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
+            ViewBag.Products = _context.Products
+                                       .Select(p => new SelectListItem
+                                       {
+                                           Value = p.ProductId.ToString(),
+                                           Text = p.Name
+                                       }).ToList();
+
             return View(orderDetail);
         }
 
+        // GET: OrderDetail/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var orderDetail = await _context.OrderDetails.FindAsync(id);
+            if (orderDetail == null) return NotFound();
+
+            ViewBag.Orders = _context.Orders
+                                     .Select(o => new SelectListItem
+                                     {
+                                         Value = o.OrderId.ToString(),
+                                         Text = o.InvoiceNo
+                                     }).ToList();
+
+            ViewBag.Products = _context.Products
+                                       .Select(p => new SelectListItem
+                                       {
+                                           Value = p.ProductId.ToString(),
+                                           Text = p.Name
+                                       }).ToList();
+
+            return View(orderDetail);
+        }
+
+        // POST: OrderDetail/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, OrderDetail orderDetail)
         {
-            if (id != orderDetail.Orderdetailsid) return NotFound();
+            if (id != orderDetail.OrderDetailId) return NotFound();
 
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
-                return View(orderDetail);
+                try
+                {
+                    // Recalculate TotalPrice
+                    orderDetail.TotalPrice = (orderDetail.Quantity ?? 0) * (orderDetail.UnitPrice ?? 0);
+
+                    _context.OrderDetails.Update(orderDetail);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!OrderDetailExists(orderDetail.OrderDetailId))
+                        return NotFound();
+                    else
+                        throw;
+                }
+                return RedirectToAction(nameof(Index));
             }
 
-            try
-            {
-                _context.Update(orderDetail);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Order detail updated successfully!";
-                return RedirectToAction(nameof(Index), new { orderId = orderDetail.OrderId });
-            }
-            catch (DbUpdateException)
-            {
-                ViewBag.ErrorMessage = "Unable to update order detail. Please try again later.";
-                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
-                return View(orderDetail);
-            }
-        }
+            ViewBag.Orders = _context.Orders
+                                     .Select(o => new SelectListItem
+                                     {
+                                         Value = o.OrderId.ToString(),
+                                         Text = o.InvoiceNo
+                                     }).ToList();
 
-        // ========== DELETE ==========
-        [HttpGet]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var orderDetail = await _context.OrderDetails
-                                            .Include(od => od.Product)
-                                            .Include(od => od.Order)
-                                            .FirstOrDefaultAsync(od => od.Orderdetailsid == id);
-
-            if (orderDetail == null) return NotFound();
-
-            if (TempData["ErrorMessage"] != null)
-                ViewBag.ErrorMessage = TempData["ErrorMessage"];
+            ViewBag.Products = _context.Products
+                                       .Select(p => new SelectListItem
+                                       {
+                                           Value = p.ProductId.ToString(),
+                                           Text = p.Name
+                                       }).ToList();
 
             return View(orderDetail);
         }
 
+        // GET: OrderDetail/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var orderDetail = await _context.OrderDetails
+                                            .Include(od => od.Order)
+                                            .Include(od => od.Product)
+                                            .FirstOrDefaultAsync(od => od.OrderDetailId == id);
+            if (orderDetail == null) return NotFound();
+
+            return View(orderDetail);
+        }
+
+        // POST: OrderDetail/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -148,22 +185,15 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var orderDetail = await _context.OrderDetails.FindAsync(id);
             if (orderDetail != null)
             {
-                try
-                {
-                    _context.OrderDetails.Remove(orderDetail);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Order detail deleted successfully!";
-                    return RedirectToAction(nameof(Index), new { orderId = orderDetail.OrderId });
-                }
-                catch (DbUpdateException)
-                {
-                    TempData["ErrorMessage"] = "Cannot delete this order detail because it’s referenced elsewhere.";
-                    return RedirectToAction(nameof(Delete), new { id });
-                }
+                _context.OrderDetails.Remove(orderDetail);
+                await _context.SaveChangesAsync();
             }
-
-            TempData["ErrorMessage"] = "Order detail not found or already deleted.";
             return RedirectToAction(nameof(Index));
+        }
+
+        private bool OrderDetailExists(int id)
+        {
+            return _context.OrderDetails.Any(od => od.OrderDetailId == id);
         }
     }
 }

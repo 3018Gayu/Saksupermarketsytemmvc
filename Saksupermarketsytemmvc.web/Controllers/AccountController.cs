@@ -20,52 +20,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _config = config;
         }
 
-        // ================== LOGIN (GET) ==================
+        // ================== LOGIN ==================
         [HttpGet]
-        public IActionResult Login()
-        {
-            // ✅ Check if JWT cookie exists
-            if (HttpContext.Request.Cookies.TryGetValue("jwtToken", out var jwtToken))
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
+        public IActionResult Login() => View();
 
-                try
-                {
-                    // Validate JWT token
-                    tokenHandler.ValidateToken(jwtToken, new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = true,
-                        ValidIssuer = _config["Jwt:Issuer"],
-                        ValidateAudience = true,
-                        ValidAudience = _config["Jwt:Audience"],
-                        ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero
-                    }, out SecurityToken validatedToken);
-
-                    var jwt = (JwtSecurityToken)validatedToken;
-                    var userName = jwt.Claims.First(c => c.Type == ClaimTypes.Name).Value;
-                    var userRole = jwt.Claims.First(c => c.Type == ClaimTypes.Role).Value;
-
-                    TempData["UserName"] = userName;
-                    TempData["UserRole"] = userRole;
-
-                    // Redirect to Welcome page
-                    return RedirectToAction("Welcome");
-                }
-                catch
-                {
-                    // Invalid or expired token → delete cookie and show login
-                    HttpContext.Response.Cookies.Delete("jwtToken");
-                }
-            }
-
-            return View();
-        }
-
-        // ================== LOGIN (POST) ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string Role)
@@ -82,24 +40,21 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 return View(model);
             }
 
-            // ✅ Check if the selected role matches the user’s stored role
             if (!string.Equals(user.UserRole, Role, StringComparison.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError("", "Role mismatch. Please select your correct role.");
                 return View(model);
             }
 
-            // ✅ Generate JWT Token
+            // Generate JWT
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
-
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.UserEmail),
                 new Claim(ClaimTypes.Role, user.UserRole)
             };
-
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -107,14 +62,11 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 Issuer = _config["Jwt:Issuer"],
                 Audience = _config["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
+                    new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
-            // ✅ Save JWT token to cookie
             HttpContext.Response.Cookies.Append("jwtToken", tokenString, new CookieOptions
             {
                 HttpOnly = true,
@@ -129,11 +81,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Welcome");
         }
 
-        // ================== REGISTER (GET) ==================
+        // ================== REGISTER ==================
         [HttpGet]
         public IActionResult Register() => View();
 
-        // ================== REGISTER (POST) ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -197,14 +148,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public IActionResult Welcome()
         {
             if (!TempData.ContainsKey("UserName"))
-            {
-                // No user info → redirect to login
                 return RedirectToAction("Login");
-            }
 
             ViewBag.UserName = TempData["UserName"];
             ViewBag.UserRole = TempData["UserRole"];
-
             return View();
         }
     }

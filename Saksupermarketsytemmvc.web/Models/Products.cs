@@ -1,35 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Saksupermarketsytemmvc.web.Models
 {
-    public partial class Product
+    public class Products
     {
+        [Key]
         public int ProductId { get; set; }
+
+        // Computed column in DB
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string? ProductCode { get; set; }
 
         [Required(ErrorMessage = "Product Name is required")]
         [StringLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "Category is required")]
-        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid category")]
-        public int CategoryId { get; set; }
+        [ForeignKey("Category")]
+        public int? CategoryId { get; set; }
 
-        [Required(ErrorMessage = "Unit Price is required")]
+        [Column(TypeName = "decimal(10,2)")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Unit Price must be greater than 0")]
-        [DataType(DataType.Currency)]
-        public decimal UnitPrice { get; set; }
+        public decimal? UnitPrice { get; set; }
 
         [Range(0, int.MaxValue, ErrorMessage = "Stock Quantity cannot be negative")]
         public int? StockQty { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime? ExpiryDate { get; set; } // Optional expiry
+        public DateTime? ExpiryDate { get; set; }
+
+        public bool? IsActive { get; set; } = true;
+
 
         // Navigation properties
-        public virtual Category Category { get; set; } = null!;
+        public virtual Category? Category { get; set; }
+
         public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
+
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
 }

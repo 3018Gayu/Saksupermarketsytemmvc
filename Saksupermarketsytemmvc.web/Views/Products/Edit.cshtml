@@ -1,16 +1,16 @@
-﻿@model Saksupermarketsytemmvc.web.Models.Product
+﻿@model Saksupermarketsytemmvc.web.Models.Products
 
 @{
-    ViewData["Title"] = "Create Product";
+    ViewData["Title"] = "Edit Product";
 }
 
-<h2>Create New Product</h2>
-<hr />
-
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h4><i class="bi bi-pencil-square"></i> Edit Product</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="ProductId" />
 
             <div class="mb-3">
                 <label asp-for="Name" class="form-label"></label>
@@ -20,8 +20,8 @@
 
             <div class="mb-3">
                 <label asp-for="CategoryId" class="form-label">Category</label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories">
-                    <option value="0">-- Select Category --</option>
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+                    <option value="">-- Select Category --</option>
                 </select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
@@ -39,21 +39,19 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="ExpiryDate" class="form-label"></label>
+                <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
                 <input asp-for="ExpiryDate" type="date" class="form-control" />
                 <span asp-validation-for="ExpiryDate" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Create</button>
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Update</button>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
 }

@@ -18,11 +18,11 @@ namespace Saksupermarketsytemmvc.web.Controllers
         {
             var vm = new DashboardViewModel
             {
-                ProductCount = _context.Products.Count(),
+                ProductsCount = _context.Products.Count(),
                 CategoryCount = _context.Categories.Count(),
                 SupplierCount = _context.Suppliers.Count(),
                 CustomerCount = _context.Customers.Count(),
-                OrderCount = _context.Orders.Count(),
+                OrdersCount = _context.Orders.Count(),
                 UserCount = _context.Users.Count()
             };
             return View(vm);
@@ -31,11 +31,11 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
     public class DashboardViewModel
     {
-        public int ProductCount { get; set; }
+        public int ProductsCount { get; set; }
         public int CategoryCount { get; set; }
         public int SupplierCount { get; set; }
         public int CustomerCount { get; set; }
-        public int OrderCount { get; set; }
+        public int OrdersCount { get; set; }
         public int UserCount { get; set; }
     }
 }
