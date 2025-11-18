@@ -8,49 +8,92 @@
     <div class="card-header bg-primary text-white">
         <h4><i class="bi bi-plus-lg"></i> Add Product</h4>
     </div>
+
     <div class="card-body">
-        <form asp-action="Create" method="post">
 
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+        <div class="row">
+            <!-- LEFT SIDE IMAGE PREVIEW -->
+            <div class="col-md-4 text-center">
+                <img id="preview" src=""
+                     style="max-width:200px; max-height:200px; display:none;"
+                     class="rounded shadow mb-3" />
             </div>
 
-            <div class="mb-3">
-                <label asp-for="CategoryId" class="form-label">Category</label>
-                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
-                    <option value="">-- Select Category --</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
+            <!-- RIGHT SIDE FORM -->
+            <div class="col-md-8">
 
-            <div class="mb-3">
-                <label asp-for="UnitPrice" class="form-label"></label>
-                <input asp-for="UnitPrice" class="form-control" />
-                <span asp-validation-for="UnitPrice" class="text-danger"></span>
-            </div>
+                <form asp-action="Create" method="post">
 
-            <div class="mb-3">
-                <label asp-for="StockQty" class="form-label"></label>
-                <input asp-for="StockQty" class="form-control" />
-                <span asp-validation-for="StockQty" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product Code</label>
+                        <input value="Auto-generated" class="form-control" disabled />
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
-                <input asp-for="ExpiryDate" type="date" class="form-control" />
-                <span asp-validation-for="ExpiryDate" class="text-danger"></span>
-            </div>
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
 
-            <div class="d-flex justify-content-between">
-                <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
-                <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Save</button>
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label">Image URL</label>
+                        <input asp-for="ImageUrl" class="form-control" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CategoryId" class="form-label">Category</label>
+                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+                            <option value="">-- Select Category --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="UnitPrice" class="form-label"></label>
+                        <input asp-for="UnitPrice" class="form-control" />
+                        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="StockQty" class="form-label"></label>
+                        <input asp-for="StockQty" class="form-control" />
+                        <span asp-validation-for="StockQty" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
+                        <input asp-for="ExpiryDate" type="date" class="form-control" />
+                        <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IsActive" class="form-label">Is Active</label>
+                        <select asp-for="IsActive" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">Back</a>
+                        <button type="submit" class="btn btn-success">Save</button>
+                    </div>
+
+                </form>
+
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
+    <script>
+        document.querySelector("#ImageUrl").addEventListener("input", function () {
+            const img = document.getElementById("preview");
+            img.src = this.value;
+            img.style.display = "block";
+        });
+    </script>
     <partial name="_ValidationScriptsPartial" />
 }

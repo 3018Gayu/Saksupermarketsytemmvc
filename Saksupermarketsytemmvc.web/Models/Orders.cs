@@ -24,6 +24,6 @@ namespace Saksupermarketsytemmvc.web.Models
 
         public virtual Customer? Customer { get; set; }
 
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public virtual ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
     }
 }

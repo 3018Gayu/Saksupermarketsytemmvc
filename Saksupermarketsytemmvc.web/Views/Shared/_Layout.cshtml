@@ -16,16 +16,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Saksoft Supermarket System</title>
+    <title>Saksoft Supermarket System - @ViewData["Title"]</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
 
     <style>
-        /* =========================================
-                   ICON-ONLY NAVIGATION STYLE
-                ==========================================*/
         .navbar-custom {
             background: #1E90FF;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -46,7 +43,6 @@
                 font-size: 1.35rem;
             }
 
-            /* Tooltip below icon */
             .navbar-nav .nav-link::after {
                 content: attr(data-title);
                 position: absolute;
@@ -68,24 +64,19 @@
                 opacity: 1;
             }
 
-        /* Toggle Button */
         .navbar-toggler {
             border-color: #fff;
         }
 
-        .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml;...");
+        /* Flex container for center menu */
+        .navbar-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
         }
 
-        /* Centering main menu */
-        .navbar-nav-center {
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* =========================================
-                   STICKY FOOTER FIX (works perfectly)
-                ==========================================*/
+        /* STICKY FOOTER */
         html, body {
             height: 100%;
         }
@@ -96,7 +87,7 @@
         }
 
         main {
-            flex: 1 0 auto; /* Pushes footer to bottom */
+            flex: 1 0 auto;
         }
 
         footer {
@@ -108,11 +99,11 @@
 </head>
 
 <body>
-    <!-- ================= NAVBAR ================= -->
+    <!-- NAVBAR -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-custom">
+        <nav class="navbar navbar-expand-lg navbar-custom position-relative">
             <div class="container-fluid">
-
+                <!-- BRAND -->
                 <a class="navbar-brand text-white fw-bold" asp-controller="Dashboard" asp-action="Index">
                     Saksoft Supermarket System
                 </a>
@@ -123,73 +114,72 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- MENU ITEMS -->
-                <div class="collapse navbar-collapse" id="navbarMenu">
-                    <ul class="navbar-nav navbar-nav-center">
-
-                        @if (isAuthenticated)
-                        {
+                <!-- CENTERED ICON NAV -->
+                <div class="navbar-center">
+                    @if (isAuthenticated)
+                    {
+                        <ul class="navbar-nav d-flex">
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Dashboard" asp-action="Index" data-title="Dashboard">
                                     <i class="bi bi-speedometer2"></i>
                                 </a>
                             </li>
 
-                            @* ---------------- ADMIN MENU ---------------- *@
+                            @* Admin Menu *@
                             @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
                             {
-                               <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Index" data-title="Products"><i class="bi bi-box-seam"></i></a></li>
-                               <li class="nav-item"><a class="nav-link" asp-controller="Order" asp-action="Index" data-title="Orders"><i class="bi bi-receipt"></i></a></li>
-                               <li class="nav-item"><a class="nav-link" asp-controller="OrderDetail" asp-action="Index" data-title="Order Details"><i class="bi bi-card-checklist"></i></a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index" data-title="Products"><i class="bi bi-box-seam"></i></a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Orders" asp-action="Index" data-title="Orders"><i class="bi bi-receipt"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index" data-title="Categories"><i class="bi bi-tags"></i></a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index" data-title="Customers"><i class="bi bi-people"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="InventoryTransaction" asp-action="Index" data-title="Inventory"><i class="bi bi-boxes"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Supplier" asp-action="Index" data-title="Suppliers"><i class="bi bi-truck"></i></a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index" data-title="Customers"><i class="bi bi-people"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="User" asp-action="Index" data-title="Users"><i class="bi bi-person-badge"></i></a></li>
+                                @* Billing option *@
+                                <li class="nav-item"><a class="nav-link" asp-controller="Billing" asp-action="Create" data-title="Billing"><i class="bi bi-currency-dollar"></i></a></li>
                             }
-
-                            @* ---------------- CASHIER MENU ---------------- *@
+                            @* Cashier Menu *@
                             else if (userRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
                             {
-                                <li class="nav-item"><a class="nav-link" asp-controller="Order" asp-action="Index" data-title="Orders"><i class="bi bi-receipt"></i></a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="OrderDetail" asp-action="Index" data-title="Order Details"><i class="bi bi-card-checklist"></i></a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Orders" asp-action="Index" data-title="Orders"><i class="bi bi-receipt"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index" data-title="Customers"><i class="bi bi-people"></i></a></li>
+                                @* Billing option for Cashier *@
+                                <li class="nav-item"><a class="nav-link" asp-controller="Billing" asp-action="Create" data-title="Billing"><i class="bi bi-currency-dollar"></i></a></li>
                             }
-
-                            @* -------- INVENTORY MANAGER MENU -------- *@
+                            @* Inventory Manager Menu *@
                             else if (userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase))
                             {
-                                <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Index" data-title="Products"><i class="bi bi-box-seam"></i></a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index" data-title="Products"><i class="bi bi-box-seam"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index" data-title="Categories"><i class="bi bi-tags"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Supplier" asp-action="Index" data-title="Suppliers"><i class="bi bi-truck"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="InventoryTransaction" asp-action="Index" data-title="Inventory"><i class="bi bi-boxes"></i></a></li>
                             }
-                        }
-                    </ul>
-
-                    <!-- Right Side -->
-                    <ul class="navbar-nav ms-auto">
-                        @if (isAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link" data-title="@userName (@userRole)">
-                                    <i class="bi bi-person-circle"></i>
-                                </span>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Logout" data-title="Logout">
-                                    <i class="bi bi-box-arrow-right"></i>
-                                </a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login" data-title="Login"><i class="bi bi-box-arrow-in-right"></i></a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Register" data-title="Register"><i class="bi bi-person-plus"></i></a></li>
-                        }
-                    </ul>
+                        </ul>
+                    }
                 </div>
+
+                <!-- RIGHT SIDE USER ICON & LOGOUT -->
+                <ul class="navbar-nav ms-auto">
+                    @if (isAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <span class="nav-link" data-title="@userName (@userRole)">
+                                <i class="bi bi-person-circle"></i>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Logout" data-title="Logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login" data-title="Login"><i class="bi bi-box-arrow-in-right"></i></a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Register" data-title="Register"><i class="bi bi-person-plus"></i></a></li>
+                    }
+                </ul>
+
             </div>
         </nav>
     </header>
@@ -199,7 +189,7 @@
         @RenderBody()
     </main>
 
-    <!-- FOOTER (Perfect Sticky) -->
+    <!-- FOOTER -->
     <footer class="text-muted text-center py-3">
         <div class="container">
             © 2025 - Saksoft Supermarket System |
@@ -211,7 +201,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

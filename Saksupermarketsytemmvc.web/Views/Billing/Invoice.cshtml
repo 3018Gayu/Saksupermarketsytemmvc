@@ -1,0 +1,33 @@
+﻿@model Saksupermarketsytemmvc.web.Models.Bill
+
+@{
+    ViewData["Title"] = "Invoice";
+}
+
+<h2>Invoice #@Model.BillId</h2>
+<p><strong>Date:</strong> @Model.BillDate.ToString("dd/MM/yyyy")</p>
+<p><strong>Customer:</strong> @Model.Customer?.CustomerName</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.BillItems)
+        {
+            <tr>
+                <td>@item.Product?.Name</td>
+                <td>@item.Quantity</td>
+                <td>@item.UnitPrice.ToString("C")</td>
+                <td>@item.TotalPrice.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Total Amount: @Model.TotalAmount.ToString("C")</h3>

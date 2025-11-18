@@ -21,12 +21,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // Read token from cookie
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            var token = context.Request.Cookies["jwtToken"]; // Must match cookie name in AccountController
+            var token = context.Request.Cookies["jwtToken"];
             if (!string.IsNullOrEmpty(token))
             {
                 context.Token = token;
@@ -41,7 +40,7 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero, // optional
+        ClockSkew = TimeSpan.Zero,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
@@ -54,7 +53,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure HTTP request pipeline
+// Configure pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -70,16 +69,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Single default route (combined)
+// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
-
-// Optional: route specifically for Product controller if you want
-// This is not strictly necessary because the default route handles it,
-// but you can define named routes for clarity
-app.MapControllerRoute(
-    name: "product",
-    pattern: "{controller=Product}/{action=Index}/{id?}");
 
 app.Run();

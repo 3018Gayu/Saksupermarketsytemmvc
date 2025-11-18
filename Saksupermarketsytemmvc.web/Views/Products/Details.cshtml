@@ -8,22 +8,45 @@
     <div class="card-header bg-info text-white">
         <h4><i class="bi bi-eye"></i> Product Details</h4>
     </div>
+
     <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">Name</dt>
-            <dd class="col-sm-9">@Model.Name</dd>
 
-            <dt class="col-sm-3">Category</dt>
-            <dd class="col-sm-9">@Model.Category?.CategoryName</dd>
+        <div class="row">
 
-            <dt class="col-sm-3">Price</dt>
-            <dd class="col-sm-9">@Model.UnitPrice.Value.ToString("C")</dd>
+            <!-- LEFT IMAGE -->
+            <div class="col-md-4 text-center">
+                <img src="@Model.ImageUrl"
+                     class="rounded shadow"
+                     style="max-width:200px; max-height:200px;" />
+            </div>
 
-            <dt class="col-sm-3">Stock</dt>
-            <dd class="col-sm-9">@Model.StockQty</dd>
-        </dl>
+            <!-- RIGHT DETAILS -->
+            <div class="col-md-8">
 
-        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
-        <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Edit</a>
+                <dl class="row">
+
+                    <dt class="col-sm-4">Product Code</dt>
+                    <dd class="col-sm-8">@Model.ProductCode</dd>
+
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8">@Model.Name</dd>
+
+                    <!-- PRICE ADDED -->
+                    <dt class="col-sm-4">Price</dt>
+                    <dd class="col-sm-8">@Model.UnitPrice?.ToString("C")</dd>
+
+                    <dt class="col-sm-4">Expiry Date</dt>
+                    <dd class="col-sm-8">@Model.ExpiryDate?.ToString("yyyy-MM-dd")</dd>
+
+                    <dt class="col-sm-4">Quantity</dt>
+                    <dd class="col-sm-8">@Model.StockQty</dd>
+
+                </dl>
+
+                <a asp-action="Index" class="btn btn-secondary">Back</a>
+                <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-warning">Edit</a>
+
+            </div>
+        </div>
     </div>
 </div>

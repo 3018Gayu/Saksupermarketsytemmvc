@@ -35,6 +35,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var product = await _context.Products
                                         .Include(p => p.Category)
                                         .FirstOrDefaultAsync(p => p.ProductId == id);
+
             if (product == null) return NotFound();
 
             return View(product);
@@ -43,12 +44,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
+            LoadCategories();
             return View();
         }
 
@@ -57,6 +53,9 @@ namespace Saksupermarketsytemmvc.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Products product)
         {
+            if (string.IsNullOrWhiteSpace(product.ImageUrl))
+                ModelState.AddModelError("ImageUrl", "Image URL is required.");
+
             if (ModelState.IsValid)
             {
                 _context.Products.Add(product);
@@ -65,12 +64,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
+            LoadCategories();
             return View(product);
         }
 
@@ -82,58 +76,55 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
+            LoadCategories();
             return View(product);
         }
 
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Products product)
+        public async Task<IActionResult> Edit(int id, Products products)
         {
-            if (id != product.ProductId) return NotFound();
+            if (id != products.ProductId) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(products.ImageUrl))
+                ModelState.AddModelError("ImageUrl", "Image URL is required.");
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Products.Update(product);
+                    _context.Products.Update(products);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Product updated successfully.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.ProductId))
+                    if (!ProductExists(products.ProductId))
                         return NotFound();
-                    else
-                        throw;
+                    throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
-            return View(product);
+            LoadCategories();
+            return View(products);
         }
 
         // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, string errorMessage = null)
         {
             if (id == null) return NotFound();
 
             var product = await _context.Products
                                         .Include(p => p.Category)
                                         .FirstOrDefaultAsync(p => p.ProductId == id);
+
             if (product == null) return NotFound();
+
+            if (!string.IsNullOrEmpty(errorMessage))
+                ViewBag.ErrorMessage = errorMessage;
 
             return View(product);
         }
@@ -144,6 +135,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);
+
             if (product != null)
             {
                 try
@@ -151,18 +143,27 @@ namespace Saksupermarketsytemmvc.web.Controllers
                     _context.Products.Remove(product);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Product deleted successfully.";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException ex)
                 {
-                    if (ex.InnerException != null && ex.InnerException.Message.Contains("REFERENCE constraint"))
-                    {
-                        TempData["ErrorMessage"] = "Cannot delete this product. It is linked with existing orders.";
-                        return RedirectToAction(nameof(Index));
-                    }
-                    throw;
+                    // If FK constraint exists, show warning in Delete page
+                    string errorMessage = "Cannot delete this product because it is linked with existing orders.";
+                    return RedirectToAction(nameof(Delete), new { id, errorMessage });
                 }
             }
+
             return RedirectToAction(nameof(Index));
+        }
+
+        private void LoadCategories()
+        {
+            ViewBag.Categories = _context.Categories
+                                         .Select(c => new SelectListItem
+                                         {
+                                             Value = c.CategoryId.ToString(),
+                                             Text = c.CategoryName
+                                         }).ToList();
         }
 
         private bool ProductExists(int id)

@@ -1,0 +1,51 @@
+﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.InventoryTransaction>
+
+@{
+    ViewData["Title"] = "Inventory Transactions";
+}
+
+<div class="text-center">
+    <h2 class="mt-4 mb-4 text-primary"><i class="bi bi-box-seam"></i> Inventory Transactions</h2>
+
+    <div class="mb-3 text-end">
+        <a asp-action="Create" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add New Transaction</a>
+    </div>
+
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Transaction ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.TransId</td>
+                    <td>@item.Product?.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Type</td>
+                    <td>@item.Date?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@item.Remarks</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.TransId" class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </a>
+                        <a asp-action="Details" asp-route-id="@item.TransId" class="btn btn-sm btn-info">
+                            <i class="bi bi-eye"></i> Details
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.TransId" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

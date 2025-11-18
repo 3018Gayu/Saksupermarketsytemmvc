@@ -1,199 +1,136 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
-    public class OrderDetailController : Controller
-    {
-        private readonly SaksoftSupermarketSystemContext _context;
-
-        public OrderDetailController(SaksoftSupermarketSystemContext context)
+    
+        public class OrderDetailsController : Controller
         {
-            _context = context;
-        }
+            private readonly SaksoftSupermarketSystemContext _context;
 
-        // GET: OrderDetail
-        public async Task<IActionResult> Index()
-        {
-            var orderDetails = await _context.OrderDetails
-                                             .Include(od => od.Order)
-                                             .Include(od => od.Product)
-                                             .ToListAsync();
-            return View(orderDetails);
-        }
-
-        // GET: OrderDetail/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var orderDetail = await _context.OrderDetails
-                                            .Include(od => od.Order)
-                                            .Include(od => od.Product)
-                                            .FirstOrDefaultAsync(od => od.OrderDetailId == id);
-            if (orderDetail == null) return NotFound();
-
-            return View(orderDetail);
-        }
-
-        // GET: OrderDetail/Create
-        public IActionResult Create()
-        {
-            ViewBag.Orders = _context.Orders
-                                     .Select(o => new SelectListItem
-                                     {
-                                         Value = o.OrderId.ToString(),
-                                         Text = o.InvoiceNo
-                                     }).ToList();
-
-            ViewBag.Products = _context.Products
-                                       .Select(p => new SelectListItem
-                                       {
-                                           Value = p.ProductId.ToString(),
-                                           Text = p.Name
-                                       }).ToList();
-
-            return View();
-        }
-
-        // POST: OrderDetail/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(OrderDetail orderDetail)
-        {
-            if (ModelState.IsValid)
+            public OrderDetailsController(SaksoftSupermarketSystemContext context)
             {
-                // Calculate TotalPrice
-                orderDetail.TotalPrice = (orderDetail.Quantity ?? 0) * (orderDetail.UnitPrice ?? 0);
-
-                _context.OrderDetails.Add(orderDetail);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                _context = context;
             }
 
-            ViewBag.Orders = _context.Orders
-                                     .Select(o => new SelectListItem
-                                     {
-                                         Value = o.OrderId.ToString(),
-                                         Text = o.InvoiceNo
-                                     }).ToList();
-
-            ViewBag.Products = _context.Products
-                                       .Select(p => new SelectListItem
-                                       {
-                                           Value = p.ProductId.ToString(),
-                                           Text = p.Name
-                                       }).ToList();
-
-            return View(orderDetail);
-        }
-
-        // GET: OrderDetail/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var orderDetail = await _context.OrderDetails.FindAsync(id);
-            if (orderDetail == null) return NotFound();
-
-            ViewBag.Orders = _context.Orders
-                                     .Select(o => new SelectListItem
-                                     {
-                                         Value = o.OrderId.ToString(),
-                                         Text = o.InvoiceNo
-                                     }).ToList();
-
-            ViewBag.Products = _context.Products
-                                       .Select(p => new SelectListItem
-                                       {
-                                           Value = p.ProductId.ToString(),
-                                           Text = p.Name
-                                       }).ToList();
-
-            return View(orderDetail);
-        }
-
-        // POST: OrderDetail/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, OrderDetail orderDetail)
-        {
-            if (id != orderDetail.OrderDetailId) return NotFound();
-
-            if (ModelState.IsValid)
+            // GET: OrderDetails
+            public async Task<IActionResult> Index()
             {
-                try
-                {
-                    // Recalculate TotalPrice
-                    orderDetail.TotalPrice = (orderDetail.Quantity ?? 0) * (orderDetail.UnitPrice ?? 0);
+                var orderDetails = _context.OrderDetails
+                    .Include(o => o.Order)
+                    .Include(o => o.Product);
+                return View(await orderDetails.ToListAsync());
+            }
 
-                    _context.OrderDetails.Update(orderDetail);
+            // GET: OrderDetails/Details/5
+            public async Task<IActionResult> Details(int? id)
+            {
+                if (id == null) return NotFound();
+
+                var orderDetail = await _context.OrderDetails
+                    .Include(o => o.Order)
+                    .Include(o => o.Product)
+                    .FirstOrDefaultAsync(m => m.OrderDetailId == id);
+
+                if (orderDetail == null) return NotFound();
+
+                return View(orderDetail);
+            }
+
+            // GET: OrderDetails/Create
+            public IActionResult Create()
+            {
+                ViewData["OrderId"] = new SelectList(_context.Orders, "OrderId", "InvoiceNo");
+                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name");
+                return View();
+            }
+
+            // POST: OrderDetails/Create
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Create([Bind("OrderDetailId,OrderId,ProductId,Quantity,UnitPrice,TotalPrice")] OrderDetails orderDetail)
+            {
+                if (ModelState.IsValid)
+                {
+                    _context.Add(orderDetail);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!OrderDetailExists(orderDetail.OrderDetailId))
-                        return NotFound();
-                    else
-                        throw;
-                }
-                return RedirectToAction(nameof(Index));
+                ViewData["OrderId"] = new SelectList(_context.Orders, "OrderId", "InvoiceNo", orderDetail.OrderId);
+                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
+                return View(orderDetail);
             }
 
-            ViewBag.Orders = _context.Orders
-                                     .Select(o => new SelectListItem
-                                     {
-                                         Value = o.OrderId.ToString(),
-                                         Text = o.InvoiceNo
-                                     }).ToList();
-
-            ViewBag.Products = _context.Products
-                                       .Select(p => new SelectListItem
-                                       {
-                                           Value = p.ProductId.ToString(),
-                                           Text = p.Name
-                                       }).ToList();
-
-            return View(orderDetail);
-        }
-
-        // GET: OrderDetail/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var orderDetail = await _context.OrderDetails
-                                            .Include(od => od.Order)
-                                            .Include(od => od.Product)
-                                            .FirstOrDefaultAsync(od => od.OrderDetailId == id);
-            if (orderDetail == null) return NotFound();
-
-            return View(orderDetail);
-        }
-
-        // POST: OrderDetail/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var orderDetail = await _context.OrderDetails.FindAsync(id);
-            if (orderDetail != null)
+            // GET: OrderDetails/Edit/5
+            public async Task<IActionResult> Edit(int? id)
             {
+                if (id == null) return NotFound();
+
+                var orderDetail = await _context.OrderDetails.FindAsync(id);
+                if (orderDetail == null) return NotFound();
+
+                ViewData["OrderId"] = new SelectList(_context.Orders, "OrderId", "InvoiceNo", orderDetail.OrderId);
+                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
+                return View(orderDetail);
+            }
+
+            // POST: OrderDetails/Edit/5
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Edit(int id, [Bind("OrderDetailId,OrderId,ProductId,Quantity,UnitPrice,TotalPrice")] OrderDetails orderDetail)
+            {
+                if (id != orderDetail.OrderDetailId) return NotFound();
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        _context.Update(orderDetail);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!OrderDetailExists(orderDetail.OrderDetailId)) return NotFound();
+                        else throw;
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
+                ViewData["OrderId"] = new SelectList(_context.Orders, "OrderId", "InvoiceNo", orderDetail.OrderId);
+                ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", orderDetail.ProductId);
+                return View(orderDetail);
+            }
+
+            // GET: OrderDetails/Delete/5
+            public async Task<IActionResult> Delete(int? id)
+            {
+                if (id == null) return NotFound();
+
+                var orderDetail = await _context.OrderDetails
+                    .Include(o => o.Order)
+                    .Include(o => o.Product)
+                    .FirstOrDefaultAsync(m => m.OrderDetailId == id);
+
+                if (orderDetail == null) return NotFound();
+
+                return View(orderDetail);
+            }
+
+            // POST: OrderDetails/Delete/5
+            [HttpPost, ActionName("Delete")]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> DeleteConfirmed(int id)
+            {
+                var orderDetail = await _context.OrderDetails.FindAsync(id);
                 _context.OrderDetails.Remove(orderDetail);
                 await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool OrderDetailExists(int id)
-        {
-            return _context.OrderDetails.Any(od => od.OrderDetailId == id);
+            private bool OrderDetailExists(int id)
+            {
+                return _context.OrderDetails.Any(e => e.OrderDetailId == id);
+            }
         }
     }
-}

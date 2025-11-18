@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Saksupermarketsytemmvc.web.Models
@@ -16,6 +18,11 @@ namespace Saksupermarketsytemmvc.web.Models
         [StringLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
         public string Name { get; set; } = null!;
 
+        // Image URL property
+        [Required(ErrorMessage = "Image URL is required")]
+        [StringLength(500, ErrorMessage = "Image URL cannot exceed 500 characters")]
+        public string? ImageUrl { get; set; }
+
         [ForeignKey("Category")]
         public int? CategoryId { get; set; }
 
@@ -31,12 +38,14 @@ namespace Saksupermarketsytemmvc.web.Models
 
         public bool? IsActive { get; set; } = true;
 
-
         // Navigation properties
         public virtual Category? Category { get; set; }
 
+        // ⭐ Add BillItems navigation
+        public virtual ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
+
         public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
 
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public virtual ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
     }
 }

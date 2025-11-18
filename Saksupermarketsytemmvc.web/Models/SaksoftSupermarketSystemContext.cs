@@ -14,14 +14,17 @@ namespace Saksupermarketsytemmvc.web.Models
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
         public virtual DbSet<InventoryTransaction> InventoryTransactions { get; set; }
-        public virtual DbSet<Orders> Orders { get; set; }           // <-- FIXED: singular
-        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
-        public virtual DbSet<Products> Products { get; set; }       // <-- FIXED: singular
+        public virtual DbSet<Orders> Orders { get; set; }
+        public virtual DbSet<OrderDetails> OrderDetails { get; set; }
+        public virtual DbSet<Products> Products { get; set; }
         public virtual DbSet<Supplier> Suppliers { get; set; }
         public virtual DbSet<User> Users { get; set; }
 
+        // NEW
+        public virtual DbSet<Bill> Bills { get; set; }
+        public virtual DbSet<BillItem> BillItems { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning Move connection string out of source code for security
             => optionsBuilder.UseSqlServer("Data Source=CDC163;Initial Catalog=SaksoftSupermarketSystem;Integrated Security=True;Trust Server Certificate=True");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,10 +45,10 @@ namespace Saksupermarketsytemmvc.web.Models
                 entity.HasKey(e => e.CustomerId);
                 entity.ToTable("Customer");
 
-                entity.Property(e => e.CustAddress).HasMaxLength(255).IsUnicode(false).HasColumnName("CUST_Address");
-                entity.Property(e => e.CustEmail).HasMaxLength(100).IsUnicode(false).HasColumnName("CUST_Email");
-                entity.Property(e => e.CustPhone).HasMaxLength(10).IsUnicode(false).HasColumnName("CUST_Phone");
-                entity.Property(e => e.CustomerName).HasMaxLength(150).IsUnicode(false).HasColumnName("CUSTOMER_Name");
+                entity.Property(e => e.CustomerName).HasMaxLength(150).IsUnicode(false);
+                entity.Property(e => e.CustEmail).HasMaxLength(100).IsUnicode(false);
+                entity.Property(e => e.CustPhone).HasMaxLength(10).IsUnicode(false);
+                entity.Property(e => e.CustAddress).HasMaxLength(255).IsUnicode(false);
             });
 
             // INVENTORY TRANSACTION
@@ -55,43 +58,24 @@ namespace Saksupermarketsytemmvc.web.Models
                 entity.ToTable("InventoryTransaction");
 
                 entity.Property(e => e.Remarks).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.TransDate).HasColumnName("Trans_Date").HasColumnType("datetime");
-                entity.Property(e => e.TransType).HasMaxLength(10).IsUnicode(false).HasColumnName("Trans_Type");
 
                 entity.HasOne(d => d.Product)
                       .WithMany(p => p.InventoryTransactions)
-                      .HasForeignKey(d => d.ProductId)
-                      .HasConstraintName("FK_Inventory_Product");
+                      .HasForeignKey(d => d.ProductId);
             });
 
             // ORDERS
             modelBuilder.Entity<Orders>(entity =>
             {
                 entity.HasKey(e => e.OrderId);
-                entity.ToTable("orders");   // <-- FIXED: matches actual DB table name
-
-                entity.HasIndex(e => e.InvoiceNo).IsUnique();
-
-                entity.Property(e => e.InvoiceNo).HasMaxLength(50).IsUnicode(false);
-                entity.Property(e => e.OrderDate).HasColumnType("datetime");
-                entity.Property(e => e.TotalAmount).HasColumnType("decimal(10,2)");
-                entity.Property(e => e.TaxAmount).HasColumnType("decimal(10,2)");
-                entity.Property(e => e.Discount).HasColumnType("decimal(10,2)");
-                entity.Property(e => e.NetAmount).HasColumnType("decimal(10,2)");
-
-                entity.HasOne(d => d.Customer)
-                      .WithMany(p => p.Orders)
-                      .HasForeignKey(d => d.CustomerId);
+                entity.ToTable("orders");
             });
 
-            // ORDER DETAIL
-            modelBuilder.Entity<OrderDetail>(entity =>
+            // ORDER DETAILS
+            modelBuilder.Entity<OrderDetails>(entity =>
             {
                 entity.HasKey(e => e.OrderDetailId);
-                entity.ToTable("OrderDetail");
-
-                entity.Property(e => e.UnitPrice).HasColumnType("decimal(10,2)");
-                entity.Property(e => e.TotalPrice).HasColumnType("decimal(10,2)");
+                entity.ToTable("OrderDetails");
 
                 entity.HasOne(d => d.Order)
                       .WithMany(p => p.OrderDetails)
@@ -107,14 +91,6 @@ namespace Saksupermarketsytemmvc.web.Models
             {
                 entity.HasKey(e => e.ProductId);
                 entity.ToTable("Products");
-
-                entity.Property(e => e.Name).HasMaxLength(150).IsUnicode(false);
-                entity.Property(e => e.UnitPrice).HasColumnType("decimal(10,2)");
-
-                entity.HasOne(d => d.Category)
-                      .WithMany(p => p.Products)
-                      .HasForeignKey(d => d.CategoryId)
-                      .HasConstraintName("FK_Products_Category");
             });
 
             // SUPPLIER
@@ -122,10 +98,6 @@ namespace Saksupermarketsytemmvc.web.Models
             {
                 entity.HasKey(e => e.SupplierId);
                 entity.ToTable("Supplier");
-
-                entity.Property(e => e.Address).HasMaxLength(255).IsUnicode(false);
-                entity.Property(e => e.Contact).HasMaxLength(10).IsUnicode(false);
-                entity.Property(e => e.Name).HasMaxLength(100).IsUnicode(false);
             });
 
             // USER
@@ -133,15 +105,35 @@ namespace Saksupermarketsytemmvc.web.Models
             {
                 entity.HasKey(e => e.UserId);
                 entity.ToTable("User");
-
-                entity.Property(e => e.UserName).HasMaxLength(50).IsUnicode(false);
-                entity.Property(e => e.UserEmail).HasMaxLength(100).IsUnicode(false).HasColumnName("User_Email");
-                entity.Property(e => e.UserRole).HasMaxLength(20).IsUnicode(false).HasColumnName("User_Role");
-                entity.Property(e => e.PasswordHash).HasMaxLength(100).IsUnicode(false);
-                entity.Property(e => e.Isactive).HasMaxLength(10).IsUnicode(false);
             });
 
-            OnModelCreatingPartial(modelBuilder);
+            // ⭐ BILL
+            modelBuilder.Entity<Bill>(entity =>
+            {
+                entity.HasKey(e => e.BillId);
+                entity.ToTable("Bills");
+
+                entity.HasOne(d => d.Customer)
+                    .WithMany(p => p.Bills)
+                    .HasForeignKey(d => d.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ⭐ BILL ITEM
+            modelBuilder.Entity<BillItem>(entity =>
+            {
+                entity.HasKey(e => e.BillItemId);
+                entity.ToTable("BillItems");
+
+                entity.HasOne(d => d.Bill)
+                    .WithMany(p => p.BillItems)
+                    .HasForeignKey(d => d.BillId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.BillItems)
+                    .HasForeignKey(d => d.ProductId);
+            });
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

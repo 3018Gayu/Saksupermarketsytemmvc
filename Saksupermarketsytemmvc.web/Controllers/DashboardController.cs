@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Saksupermarketsytemmvc.web.Models;
+using System.Security.Claims;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -16,15 +17,35 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
         public IActionResult Index()
         {
-            var vm = new DashboardViewModel
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+            var vm = new DashboardViewModel();
+
+            // Admin can see all
+            if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
             {
-                ProductsCount = _context.Products.Count(),
-                CategoryCount = _context.Categories.Count(),
-                SupplierCount = _context.Suppliers.Count(),
-                CustomerCount = _context.Customers.Count(),
-                OrdersCount = _context.Orders.Count(),
-                UserCount = _context.Users.Count()
-            };
+                vm.ProductsCount = _context.Products.Count();
+                vm.CategoryCount = _context.Categories.Count();
+                vm.SupplierCount = _context.Suppliers.Count();
+                vm.CustomerCount = _context.Customers.Count();
+                vm.OrdersCount = _context.Orders.Count();
+                vm.UserCount = _context.Users.Count();
+            }
+            // Cashier can see only Orders, Customers
+            else if (userRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
+            {
+                vm.CustomerCount = _context.Customers.Count();
+                vm.OrdersCount = _context.Orders.Count();
+            }
+            // Inventory Manager can see Products, Categories, Suppliers
+            else if (userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase))
+            {
+                vm.ProductsCount = _context.Products.Count();
+                vm.CategoryCount = _context.Categories.Count();
+                vm.SupplierCount = _context.Suppliers.Count();
+            }
+
+            ViewData["UserRole"] = userRole;
             return View(vm);
         }
     }

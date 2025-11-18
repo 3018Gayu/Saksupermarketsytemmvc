@@ -1,14 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Inventory Manager")]
     public class InventoryTransactionController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -22,8 +19,9 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> Index()
         {
             var transactions = await _context.InventoryTransactions
-                                             .Include(t => t.Product)
-                                             .ToListAsync();
+                .Include(t => t.Product)
+                .ToListAsync();
+
             return View(transactions);
         }
 
@@ -33,33 +31,34 @@ namespace Saksupermarketsytemmvc.web.Controllers
             if (id == null) return NotFound();
 
             var transaction = await _context.InventoryTransactions
-                                            .Include(t => t.Product)
-                                            .FirstOrDefaultAsync(t => t.TransId == id);
+                .Include(t => t.Product)
+                .FirstOrDefaultAsync(m => m.TransId == id);
 
             if (transaction == null) return NotFound();
+
             return View(transaction);
         }
 
         // GET: InventoryTransaction/Create
         public IActionResult Create()
         {
-            LoadProducts();
+            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name");
             return View();
         }
 
         // POST: InventoryTransaction/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(InventoryTransaction transaction)
+        public async Task<IActionResult> Create([Bind("TransId,ProductId,Quantity,Type,Remarks,Date")] InventoryTransaction transaction)
         {
             if (ModelState.IsValid)
             {
-                _context.InventoryTransactions.Add(transaction);
+                _context.Add(transaction);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadProducts();
+            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", transaction.ProductId);
             return View(transaction);
         }
 
@@ -71,14 +70,14 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var transaction = await _context.InventoryTransactions.FindAsync(id);
             if (transaction == null) return NotFound();
 
-            LoadProducts();
+            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", transaction.ProductId);
             return View(transaction);
         }
 
         // POST: InventoryTransaction/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, InventoryTransaction transaction)
+        public async Task<IActionResult> Edit(int id, [Bind("TransId,ProductId,Quantity,Type,Remarks,Date")] InventoryTransaction transaction)
         {
             if (id != transaction.TransId) return NotFound();
 
@@ -86,20 +85,21 @@ namespace Saksupermarketsytemmvc.web.Controllers
             {
                 try
                 {
-                    _context.InventoryTransactions.Update(transaction);
+                    _context.Update(transaction);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TransactionExists(transaction.TransId))
+                    if (!InventoryTransactionExists(transaction.TransId))
                         return NotFound();
                     else
                         throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadProducts();
+            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "Name", transaction.ProductId);
             return View(transaction);
         }
 
@@ -109,42 +109,33 @@ namespace Saksupermarketsytemmvc.web.Controllers
             if (id == null) return NotFound();
 
             var transaction = await _context.InventoryTransactions
-                                            .Include(t => t.Product)
-                                            .FirstOrDefaultAsync(t => t.TransId == id);
+                .Include(t => t.Product)
+                .FirstOrDefaultAsync(m => m.TransId == id);
 
             if (transaction == null) return NotFound();
+
             return View(transaction);
         }
 
-        // POST: InventoryTransaction/Delete/5
+        // POST: InventoryTransaction/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var transaction = await _context.InventoryTransactions.FindAsync(id);
+
             if (transaction != null)
             {
                 _context.InventoryTransactions.Remove(transaction);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction(nameof(Index));
         }
 
-        // Helper method to load product dropdown
-        private void LoadProducts()
+        private bool InventoryTransactionExists(int id)
         {
-            ViewBag.Products = _context.Products
-                                       .Where(p => p.IsActive == true)
-                                       .Select(p => new SelectListItem
-                                       {
-                                           Value = p.ProductId.ToString(),
-                                           Text = p.Name
-                                       }).ToList();
-        }
-
-        private bool TransactionExists(int id)
-        {
-            return _context.InventoryTransactions.Any(t => t.TransId == id);
+            return _context.InventoryTransactions.Any(e => e.TransId == id);
         }
     }
 }

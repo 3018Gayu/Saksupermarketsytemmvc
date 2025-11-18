@@ -1,21 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Saksupermarketsytemmvc.web.Models;
-
-public partial class Customer
+namespace Saksupermarketsytemmvc.web.Models
 {
-    public int CustomerId { get; set; }
+    public partial class Customer
+    {
+        public int CustomerId { get; set; }
 
-    public string CustomerName { get; set; } = null!;
+        [Column("CUSTOMER_Name")]
+        public string CustomerName { get; set; } = null!;
 
-    public string? CustEmail { get; set; }
+        [Column("CUST_Email")]
+        public string? CustEmail { get; set; }
 
-    public string? CustPhone { get; set; }
+        [Column("CUST_Phone")]
+        public string? CustPhone { get; set; }
 
-    public string? CustAddress { get; set; }
+        [Column("CUST_Address")]
+        public string? CustAddress { get; set; }
 
-    public int LoyaltyPoints { get; set; }
+        public int LoyaltyPoints { get; set; }
 
-    public virtual ICollection<Orders> Orders { get; set; } = new List<Orders>();
+        // Existing relationship
+        public virtual ICollection<Orders> Orders { get; set; } = new List<Orders>();
+
+        // Required for Bill relationship
+        public virtual ICollection<Bill> Bills { get; set; } = new List<Bill>();
+    }
 }

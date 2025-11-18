@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Saksupermarketsytemmvc.web.Models;
@@ -20,7 +21,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _config = config;
         }
 
-        // ================== LOGIN ==================
         [HttpGet]
         public IActionResult Login() => View();
 
@@ -28,8 +28,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string Role)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
             var user = await _context.Users.FirstOrDefaultAsync(u =>
                 u.UserEmail == model.Email && u.Isactive == "Active");
@@ -46,7 +45,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 return View(model);
             }
 
-            // Generate JWT
+            // JWT Generation
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
             var claims = new[]
@@ -55,6 +54,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 new Claim(ClaimTypes.Email, user.UserEmail),
                 new Claim(ClaimTypes.Role, user.UserRole)
             };
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -64,6 +64,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
+
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
@@ -75,13 +76,9 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_config["Jwt:ExpireHours"] ?? "1"))
             });
 
-            TempData["UserName"] = user.UserName;
-            TempData["UserRole"] = user.UserRole;
-
             return RedirectToAction("Welcome");
         }
 
-        // ================== REGISTER ==================
         [HttpGet]
         public IActionResult Register() => View();
 
@@ -113,7 +110,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
-        // ================== FORGOT PASSWORD ==================
         [HttpGet]
         public IActionResult ForgotPassword() => View();
 
@@ -135,7 +131,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
-        // ================== LOGOUT ==================
         [HttpGet]
         public IActionResult Logout()
         {
@@ -143,15 +138,16 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
-        // ================== WELCOME PAGE ==================
         [HttpGet]
+        [Authorize]
         public IActionResult Welcome()
         {
-            if (!TempData.ContainsKey("UserName"))
-                return RedirectToAction("Login");
+            var userName = User.Identity?.Name ?? "Unknown";
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "Unknown";
 
-            ViewBag.UserName = TempData["UserName"];
-            ViewBag.UserRole = TempData["UserRole"];
+            ViewBag.UserName = userName;
+            ViewBag.UserRole = userRole;
+
             return View();
         }
     }

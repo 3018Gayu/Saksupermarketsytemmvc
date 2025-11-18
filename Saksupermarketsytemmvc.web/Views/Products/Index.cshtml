@@ -4,40 +4,25 @@
     ViewData["Title"] = "Products";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between mb-3">
     <h2>Products</h2>
-    <a class="btn btn-primary" asp-action="Create">
-        <i class="bi bi-plus-lg"></i> Add Product
-    </a>
+    <a class="btn btn-primary" asp-action="Create">Add Product</a>
 </div>
 
-<table class="table table-hover table-striped align-middle">
+<table class="table table-bordered table-striped align-middle">
     <thead class="table-dark">
         <tr>
-            <th>#</th>
+            <th>SI.NO</th>
+            <th>Image</th>
+            <th>Product Code</th>
             <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Stock</th>
+            <th>Price</th>         <!-- ADDED -->
+            <th>Expiry</th>
+            <th>Qty</th>
             <th>Actions</th>
         </tr>
     </thead>
+
     <tbody>
         @if (Model.Any())
         {
@@ -46,20 +31,26 @@
             {
                 <tr>
                     <td>@index</td>
-                    <td>@item.Name</td>
-                    <td>@item.Category?.CategoryName</td>
-                    <td>@item.UnitPrice.Value.ToString("C")</td>
-                    <td>@item.StockQty</td>
+
                     <td>
-                        <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-info btn-sm me-1" title="View">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-warning btn-sm me-1" title="Edit">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-                        <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn btn-danger btn-sm" title="Delete">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        <img src="@item.ImageUrl"
+                             style="width:100px; height:100px; object-fit:cover;"
+                             class="rounded shadow-sm" />
+                    </td>
+
+                    <td>@item.ProductCode</td>
+                    <td>@item.Name</td>
+
+                    <!-- PRICE ADDED -->
+                    <td>@item.UnitPrice?.ToString("C")</td>
+
+                    <td>@item.ExpiryDate?.ToString("yyyy-MM-dd")</td>
+                    <td>@item.StockQty</td>
+
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-info btn-sm">View</a>
+                        <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-warning btn-sm">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn btn-danger btn-sm">Delete</a>
                     </td>
                 </tr>
                 index++;
@@ -67,9 +58,7 @@
         }
         else
         {
-            <tr>
-                <td colspan="6" class="text-center">No products found.</td>
-            </tr>
+            <tr><td colspan="8" class="text-center">No products found.</td></tr>
         }
     </tbody>
 </table>

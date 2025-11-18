@@ -1,23 +1,34 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Saksupermarketsytemmvc.web.Models;
-
-public partial class User
+namespace Saksupermarketsytemmvc.web.Models
 {
-    public int UserId { get; set; }
+    [Table("Users")]
+    public partial class User
+    {
+        [Key]
+        public int UserId { get; set; }
 
-    [Required]
-    public string UserName { get; set; } = null!;
+        [Required]
+        [MaxLength(50)]
+        public string UserName { get; set; } = null!;
 
-    [Required, EmailAddress]
-    public string UserEmail { get; set; } = null!;
+        [Required, EmailAddress]
+        [Column("User_Email")] // Map to DB column
+        [MaxLength(100)]
+        public string UserEmail { get; set; } = null!;
 
-    [DataType(DataType.Password)]
-    public string? PasswordHash { get; set; } // Made nullable for Edit
+        [DataType(DataType.Password)]
+        [MaxLength(100)]
+        public string? PasswordHash { get; set; } // Nullable for Edit
 
-    [Required]
-    public string UserRole { get; set; } = null!;
+        [Required]
+        [Column("User_Role")] // Map to DB column
+        [MaxLength(20)]
+        public string UserRole { get; set; } = null!;
 
-    [Required]
-    public string? Isactive { get; set; }
+        [Required]
+        [MaxLength(10)]
+        public string? Isactive { get; set; }
+    }
 }

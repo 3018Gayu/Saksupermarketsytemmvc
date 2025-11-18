@@ -1,6 +1,6 @@
 ﻿namespace Saksupermarketsytemmvc.web.Models
 {
-    public class OrderDetail
+    public class OrderDetails
     {
         public int OrderDetailId { get; set; }
 

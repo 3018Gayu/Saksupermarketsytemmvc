@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -40,6 +39,11 @@ namespace Saksupermarketsytemmvc.web.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (!string.IsNullOrEmpty(user.PasswordHash))
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+
+                user.Isactive ??= "Active";
+
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "User created successfully!";
@@ -69,6 +73,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
                 if (string.IsNullOrEmpty(user.PasswordHash))
                     user.PasswordHash = existingUser.PasswordHash;
+                else
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+
+                user.Isactive ??= existingUser.Isactive;
 
                 _context.Update(user);
                 await _context.SaveChangesAsync();

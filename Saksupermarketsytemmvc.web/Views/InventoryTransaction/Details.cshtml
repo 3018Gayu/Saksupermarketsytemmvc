@@ -1,0 +1,24 @@
+﻿@model Saksupermarketsytemmvc.web.Models.InventoryTransaction
+
+@{
+    ViewData["Title"] = "Transaction Details";
+}
+
+<div class="text-center">
+    <h2 class="mt-4 mb-4 text-primary"><i class="bi bi-card-list"></i> Transaction Details</h2>
+
+    <div class="mb-3 text-end">
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+
+    <div class="card mx-auto" style="max-width:600px;">
+        <div class="card-body">
+            <h5 class="card-title">Transaction ID: @Model.TransId</h5>
+            <p><strong>Product:</strong> @Model.Product?.Name</p>
+            <p><strong>Quantity:</strong> @Model.Quantity</p>
+            <p><strong>Type:</strong> @Model.Type</p>
+            <p><strong>Date:</strong> @Model.Date?.ToString("yyyy-MM-dd HH:mm")</p>
+            <p><strong>Remarks:</strong> @Model.Remarks</p>
+        </div>
+    </div>
+</div>

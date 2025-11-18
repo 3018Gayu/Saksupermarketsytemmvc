@@ -1,0 +1,36 @@
+﻿@model Saksupermarketsytemmvc.web.Models.InventoryTransaction
+
+@{
+    ViewData["Title"] = "Delete Transaction";
+}
+
+<div class="text-center">
+    <h2 class="mt-4 mb-4 text-danger"><i class="bi bi-trash"></i> Delete Transaction</h2>
+
+    <div class="mb-3 text-end">
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+
+    <div class="card mx-auto" style="max-width:600px;">
+        <div class="card-body">
+            <h5 class="card-title">Are you sure you want to delete this transaction?</h5>
+
+            <p><strong>Transaction ID:</strong> @Model.TransId</p>
+            <p><strong>Product:</strong> @Model.Product?.Name</p>
+            <p><strong>Quantity:</strong> @Model.Quantity</p>
+            <p><strong>Type:</strong> @Model.Type</p>
+            <p><strong>Date:</strong> @Model.Date?.ToString("yyyy-MM-dd HH:mm")</p>
+            <p><strong>Remarks:</strong> @Model.Remarks</p>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="TransId" />
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>

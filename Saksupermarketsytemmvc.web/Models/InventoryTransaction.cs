@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Saksupermarketsytemmvc.web.Models
 {
-    public class InventoryTransaction
+    public partial class InventoryTransaction
     {
         [Key]
         public int TransId { get; set; }
@@ -14,13 +14,13 @@ namespace Saksupermarketsytemmvc.web.Models
 
         public int? Quantity { get; set; }
 
-        [StringLength(10)]
-        public string? TransType { get; set; }
+        [StringLength(50)]
+        public string? Type { get; set; }
 
         [StringLength(255)]
         public string? Remarks { get; set; }
 
-        public DateTime? TransDate { get; set; }
+        public DateTime? Date { get; set; }
 
         public virtual Products? Product { get; set; }
     }

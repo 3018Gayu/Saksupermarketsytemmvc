@@ -1,0 +1,153 @@
+﻿@model Saksupermarketsytemmvc.web.Models.Bill
+@{
+    ViewData["Title"] = "Create Bill";
+}
+
+<h2>Create Bill</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <label>Customer</label>
+        <select id="customerId" class="form-control">
+            <option value="">Select Customer</option>
+            @foreach (var cust in ViewBag.Customers as SelectList)
+            {
+                <option value="@cust.Value">@cust.Text</option>
+            }
+        </select>
+    </div>
+</div>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-3">
+        <label>Product</label>
+        <select id="productId" class="form-control">
+            <option value="">Select Product</option>
+            @foreach (var prod in ViewBag.Products as SelectList)
+            {
+                <option value="@prod.Value">@prod.Text</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label>Unit Price</label>
+        <input type="text" id="unitPrice" class="form-control" readonly />
+    </div>
+    <div class="col-md-2">
+        <label>Quantity</label>
+        <input type="number" id="quantity" class="form-control" min="1" value="1" />
+    </div>
+    <div class="col-md-2">
+        <label>Total</label>
+        <input type="text" id="totalPrice" class="form-control" readonly />
+    </div>
+    <div class="col-md-2 mt-4">
+        <button id="addItem" class="btn btn-primary">Add</button>
+    </div>
+</div>
+
+<hr />
+
+<h4>Bill Items</h4>
+<table class="table table-bordered" id="billItemsTable">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<h4>Total Amount: <span id="grandTotal">0</span></h4>
+
+<button id="saveBill" class="btn btn-success">Save Bill</button>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        var billItems = [];
+
+        $('#productId').change(function () {
+            var productId = $(this).val();
+            if (productId) {
+                $.getJSON('@Url.Action("GetProductPrice")', { productId: productId }, function (price) {
+                    $('#unitPrice').val(price);
+                    $('#totalPrice').val(price);
+                });
+            } else {
+                $('#unitPrice').val('');
+                $('#totalPrice').val('');
+            }
+        });
+
+        $('#quantity').on('input', function () {
+            var qty = $(this).val();
+            var price = $('#unitPrice').val();
+            var total = qty * price;
+            $('#totalPrice').val(total.toFixed(2));
+        });
+
+        $('#addItem').click(function () {
+            var productId = $('#productId').val();
+            var productName = $("#productId option:selected").text();
+            var qty = parseInt($('#quantity').val());
+            var price = parseFloat($('#unitPrice').val());
+            if (!productId || !qty || !price) { alert("Select product and quantity"); return; }
+
+            var itemTotal = qty * price;
+            billItems.push({ ProductId: productId, ProductName: productName, Quantity: qty, UnitPrice: price, Total: itemTotal });
+
+            refreshTable();
+        });
+
+        function refreshTable() {
+            var tbody = $('#billItemsTable tbody');
+            tbody.empty();
+            var grandTotal = 0;
+            billItems.forEach((item, index) => {
+                grandTotal += item.Total;
+                tbody.append(`<tr>
+                    <td>${item.ProductName}</td>
+                    <td>${item.UnitPrice.toFixed(2)}</td>
+                    <td>${item.Quantity}</td>
+                    <td>${item.Total.toFixed(2)}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeItem(${index})">Remove</button></td>
+                </tr>`);
+            });
+            $('#grandTotal').text(grandTotal.toFixed(2));
+        }
+
+        function removeItem(index) {
+            billItems.splice(index, 1);
+            refreshTable();
+        }
+
+        $('#saveBill').click(function () {
+            var customerId = $('#customerId').val();
+            if (!customerId) { alert("Select Customer"); return; }
+
+            var totalAmount = billItems.reduce((sum, i) => sum + i.Total, 0);
+            var billData = { CustomerId: customerId, TotalAmount: totalAmount, BillItems: billItems };
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("CreateBill")',
+                contentType: "application/json",
+                data: JSON.stringify(billData),
+                success: function (res) {
+                    if (res.success) {
+                        alert("Bill saved successfully!");
+                        window.location.href = '/Billing/Invoice/' + res.billId;
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
     public class OrdersController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -21,6 +20,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
+            // Eagerly load Customer to prevent NullReferenceException
             var orders = await _context.Orders
                                        .Include(o => o.Customer)
                                        .ToListAsync();
@@ -34,34 +34,34 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
             var order = await _context.Orders
                                       .Include(o => o.Customer)
-                                      .Include(o => o.OrderDetails)
-                                      .ThenInclude(od => od.Product)
-                                      .FirstOrDefaultAsync(o => o.OrderId == id);
+                                      .FirstOrDefaultAsync(m => m.OrderId == id);
 
             if (order == null) return NotFound();
+
             return View(order);
         }
 
         // GET: Orders/Create
         public IActionResult Create()
         {
-            LoadCustomers();
+            // Pass customers for dropdown
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName");
             return View();
         }
 
         // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Orders order)
+        public async Task<IActionResult> Create([Bind("CustomerId,ProductId,Quantity,UnitPrice,TotalAmount,TaxAmount,Discount,NetAmount")] Orders order)
         {
             if (ModelState.IsValid)
             {
-                _context.Orders.Add(order);
+                _context.Add(order);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadCustomers();
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
             return View(order);
         }
 
@@ -73,14 +73,14 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound();
 
-            LoadCustomers();
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
             return View(order);
         }
 
         // POST: Orders/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Orders order)
+        public async Task<IActionResult> Edit(int id, [Bind("OrderId,CustomerId,ProductId,Quantity,UnitPrice,TotalAmount,TaxAmount,Discount,NetAmount")] Orders order)
         {
             if (id != order.OrderId) return NotFound();
 
@@ -88,8 +88,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             {
                 try
                 {
-                    _context.Entry(order).Property(o => o.InvoiceNo).IsModified = false;
-                    _context.Orders.Update(order);
+                    _context.Update(order);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -102,23 +101,19 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadCustomers();
+            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
             return View(order);
         }
 
         // GET: Orders/Delete/5
-        public async Task<IActionResult> Delete(int? id, string errorMessage = null)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var order = await _context.Orders
                                       .Include(o => o.Customer)
-                                      .FirstOrDefaultAsync(o => o.OrderId == id);
-
+                                      .FirstOrDefaultAsync(m => m.OrderId == id);
             if (order == null) return NotFound();
-
-            if (!string.IsNullOrEmpty(errorMessage))
-                ViewBag.ErrorMessage = errorMessage;
 
             return View(order);
         }
@@ -131,35 +126,15 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order != null)
             {
-                try
-                {
-                    _context.Orders.Remove(order);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException)
-                {
-                    // Cannot delete due to FK constraint
-                    string errorMessage = "Cannot delete this order because it has related order details.";
-                    return RedirectToAction(nameof(Delete), new { id, errorMessage });
-                }
+                _context.Orders.Remove(order);
+                await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // Helper to load customer dropdown
-        private void LoadCustomers()
-        {
-            ViewBag.Customers = _context.Customers
-                                        .Select(c => new SelectListItem
-                                        {
-                                            Value = c.CustomerId.ToString(),
-                                            Text = c.CustomerName
-                                        }).ToList();
-        }
-
         private bool OrderExists(int id)
         {
-            return _context.Orders.Any(o => o.OrderId == id);
+            return _context.Orders.Any(e => e.OrderId == id);
         }
     }
 }
