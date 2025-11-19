@@ -1,92 +1,64 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
+    [Authorize(Roles = "Admin,Cashier")]
     public class BillingController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
-
-        public BillingController(SaksoftSupermarketSystemContext context)
-        {
-            _context = context;
-        }
+        public BillingController(SaksoftSupermarketSystemContext context) => _context = context;
 
         // GET: Billing/Create
         public async Task<IActionResult> Create()
         {
-            // Fetch customers with correct property names
-            var customers = await _context.Customers
-                .Select(c => new { c.CustomerId, c.CustomerName })
-                .ToListAsync();
-
-            // Fetch products
-            var products = await _context.Products
-                .Select(p => new { p.ProductId, p.Name })
-                .ToListAsync();
-
-            ViewBag.Customers = new SelectList(customers, "CustomerId", "CustomerName");
-            ViewBag.Products = new SelectList(products, "ProductId", "Name");
-
+            ViewBag.Customers = new SelectList(await _context.Customers.ToListAsync(), "CustomerId", "CustomerName");
+            ViewBag.Products = new SelectList(await _context.Products.ToListAsync(), "ProductId", "Name");
             return View();
         }
 
-        // AJAX: Get product price by ID
+        // AJAX: Get product price
         [HttpGet]
         public async Task<IActionResult> GetProductPrice(int productId)
         {
             var product = await _context.Products.FindAsync(productId);
-            if (product == null) return Json(0);
-            return Json(product.UnitPrice);
+            return Json(product?.UnitPrice ?? 0);
         }
 
-        // AJAX: Save Bill
+        // POST: Billing/CreateBill
         [HttpPost]
         public async Task<IActionResult> CreateBill([FromBody] Bill bill)
         {
             if (bill == null || bill.BillItems == null || !bill.BillItems.Any())
                 return Json(new { success = false, message = "Bill cannot be empty." });
 
-            // Save Bill Header
-            var newBill = new Bill
-            {
-                CustomerId = bill.CustomerId,
-                BillDate = DateTime.Now,
-                TotalAmount = bill.TotalAmount
-            };
+            bill.BillDate = DateTime.Now;
 
-            _context.Bills.Add(newBill);
-            await _context.SaveChangesAsync();
+            // Allow walk-in customer
+            if (bill.CustomerId == 0) bill.CustomerId = null;
 
-            // Save Bill Items and reduce stock
+            _context.Bills.Add(bill);
+
             foreach (var item in bill.BillItems)
             {
                 var product = await _context.Products.FindAsync(item.ProductId);
                 if (product != null)
                 {
                     product.StockQty -= item.Quantity;
+                    _context.BillItems.Add(item);
                 }
-
-                var billItem = new BillItem
-                {
-                    BillId = newBill.BillId,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice
-                    // Use TotalPrice from model, do not set Total manually
-                };
-
-                _context.BillItems.Add(billItem);
             }
 
             await _context.SaveChangesAsync();
-
-            return Json(new { success = true, billId = newBill.BillId });
+            return Json(new { success = true, billId = bill.BillId });
         }
 
-        // GET: Billing/Invoice/{id}
+        // GET: Billing/Invoice/5
         public async Task<IActionResult> Invoice(int id)
         {
             var bill = await _context.Bills
@@ -96,7 +68,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 .FirstOrDefaultAsync(b => b.BillId == id);
 
             if (bill == null) return NotFound();
-
             return View(bill);
         }
     }

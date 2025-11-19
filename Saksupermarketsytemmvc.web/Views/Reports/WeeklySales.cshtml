@@ -1,0 +1,52 @@
+﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.Bill>
+@{
+    ViewData["Title"] = "Weekly Sales Report";
+    var start = ViewBag.Start as DateTime? ?? DateTime.Today.AddDays(-6);
+    var end = ViewBag.End as DateTime? ?? DateTime.Today;
+    var selectedDate = ViewBag.SelectedDate as DateTime? ?? start;
+}
+
+<h2>Weekly Sales Report</h2>
+
+<form method="get" class="form-inline mb-3">
+    <label for="startDate" class="mr-2">Select Start Date:</label>
+    <input type="date" id="startDate" name="startDate" class="form-control mr-2" value="@selectedDate.ToString("yyyy-MM-dd")" /><br />
+    <button type="submit" class="btn btn-primary">View Weekly Sales</button>
+</form>
+
+<h4>Period: @start.ToString("dd MMM yyyy") to @end.ToString("dd MMM yyyy")</h4>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No sales recorded for this week.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Bill ID</th>
+                <th>Customer</th>
+                <th>Bill Date</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bill in Model)
+            {
+                <tr>
+                    <td>@bill.BillId</td>
+                    <td>@(bill.Customer?.CustomerName ?? "Walk-in")</td>
+                    <td>@bill.BillDate.ToString("dd/MM/yyyy")</td>
+                    <td>@bill.TotalAmount.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3">Total Sales</th>
+                <th>@Model.Sum(b => b.TotalAmount).ToString("C")</th>
+            </tr>
+        </tfoot>
+    </table>
+}

@@ -1,28 +1,32 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.Products
+@using Saksupermarketsytemmvc.web.Models
 
 @{
-    ViewData["Title"] = "Add Product";
+    ViewData["Title"] = Model.ProductId == 0 ? "Add Product" : "Edit Product";
+    var isEdit = Model.ProductId != 0;
 }
 
 <div class="card shadow-sm">
     <div class="card-header bg-primary text-white">
-        <h4><i class="bi bi-plus-lg"></i> Add Product</h4>
+        <h4>
+            <i class="bi @(isEdit ? "bi-pencil" : "bi-plus-lg")"></i>
+            @(isEdit ? "Edit Product" : "Add Product")
+        </h4>
     </div>
 
     <div class="card-body">
-
         <div class="row">
             <!-- LEFT SIDE IMAGE PREVIEW -->
             <div class="col-md-4 text-center">
-                <img id="preview" src=""
-                     style="max-width:200px; max-height:200px; display:none;"
+                <img id="preview" src="@Model.ImageUrl ?? " " "
+                     style="max-width:200px; max-height:200px;@(string.IsNullOrEmpty(Model.ImageUrl) ? "display:none;" : "")"
                      class="rounded shadow mb-3" />
             </div>
 
             <!-- RIGHT SIDE FORM -->
             <div class="col-md-8">
-
-                <form asp-action="Create" method="post">
+                <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+                    <input type="hidden" asp-for="ProductId" />
 
                     <div class="mb-3">
                         <label class="form-label">Product Code</label>
@@ -37,15 +41,17 @@
 
                     <div class="mb-3">
                         <label asp-for="ImageUrl" class="form-label">Image URL</label>
-                        <input asp-for="ImageUrl" class="form-control" />
+                        <input asp-for="ImageUrl" class="form-control" id="ImageUrl" />
                         <span asp-validation-for="ImageUrl" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="CategoryId" class="form-label">Category</label>
-                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+                        <select asp-for="CategoryId" class="form-select"
+                                asp-items="ViewBag.Categories ?? new SelectList(Enumerable.Empty<Category>(), nameof(Category.CategoryId), nameof(Category.CategoryName))">
                             <option value="">-- Select Category --</option>
                         </select>
+
                         <span asp-validation-for="CategoryId" class="text-danger"></span>
                     </div>
 
@@ -68,7 +74,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="IsActive" class="form-label">Is Active</label>
+                        <label asp-for="IsActive" class="form-label">Status</label>
                         <select asp-for="IsActive" class="form-select">
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
@@ -79,9 +85,7 @@
                         <a asp-action="Index" class="btn btn-secondary">Back</a>
                         <button type="submit" class="btn btn-success">Save</button>
                     </div>
-
                 </form>
-
             </div>
         </div>
     </div>
@@ -89,10 +93,11 @@
 
 @section Scripts {
     <script>
-        document.querySelector("#ImageUrl").addEventListener("input", function () {
+        const imgInput = document.querySelector("#ImageUrl");
+        imgInput.addEventListener("input", function () {
             const img = document.getElementById("preview");
             img.src = this.value;
-            img.style.display = "block";
+            img.style.display = this.value ? "block" : "none";
         });
     </script>
     <partial name="_ValidationScriptsPartial" />

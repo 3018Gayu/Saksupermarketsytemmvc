@@ -9,7 +9,7 @@
     <div class="col-md-6">
         <label>Customer</label>
         <select id="customerId" class="form-control">
-            <option value="">Select Customer</option>
+            <option value="0">Walk-in</option> <!-- Default Walk-in -->
             @foreach (var cust in ViewBag.Customers as SelectList)
             {
                 <option value="@cust.Value">@cust.Text</option>
@@ -61,8 +61,7 @@
             <th>Action</th>
         </tr>
     </thead>
-    <tbody>
-    </tbody>
+    <tbody></tbody>
 </table>
 
 <h4>Total Amount: <span id="grandTotal">0</span></h4>
@@ -74,6 +73,7 @@
     <script>
         var billItems = [];
 
+        // Get product price on change
         $('#productId').change(function () {
             var productId = $(this).val();
             if (productId) {
@@ -87,6 +87,7 @@
             }
         });
 
+        // Calculate total price
         $('#quantity').on('input', function () {
             var qty = $(this).val();
             var price = $('#unitPrice').val();
@@ -94,16 +95,17 @@
             $('#totalPrice').val(total.toFixed(2));
         });
 
+        // Add item to bill
         $('#addItem').click(function () {
             var productId = $('#productId').val();
             var productName = $("#productId option:selected").text();
             var qty = parseInt($('#quantity').val());
             var price = parseFloat($('#unitPrice').val());
+
             if (!productId || !qty || !price) { alert("Select product and quantity"); return; }
 
             var itemTotal = qty * price;
             billItems.push({ ProductId: productId, ProductName: productName, Quantity: qty, UnitPrice: price, Total: itemTotal });
-
             refreshTable();
         });
 
@@ -129,11 +131,13 @@
             refreshTable();
         }
 
+        // Save bill
         $('#saveBill').click(function () {
-            var customerId = $('#customerId').val();
-            if (!customerId) { alert("Select Customer"); return; }
-
+            var customerId = $('#customerId').val() || 0; // Walk-in = 0
             var totalAmount = billItems.reduce((sum, i) => sum + i.Total, 0);
+
+            if (!billItems.length) { alert("Add at least one product"); return; }
+
             var billData = { CustomerId: customerId, TotalAmount: totalAmount, BillItems: billItems };
 
             $.ajax({
@@ -145,6 +149,8 @@
                     if (res.success) {
                         alert("Bill saved successfully!");
                         window.location.href = '/Billing/Invoice/' + res.billId;
+                    } else {
+                        alert(res.message);
                     }
                 }
             });

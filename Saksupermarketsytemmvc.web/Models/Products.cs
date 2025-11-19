@@ -10,42 +10,38 @@ namespace Saksupermarketsytemmvc.web.Models
         [Key]
         public int ProductId { get; set; }
 
-        // Computed column in DB
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string? ProductCode { get; set; }
 
         [Required(ErrorMessage = "Product Name is required")]
-        [StringLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
+        [StringLength(100)]
         public string Name { get; set; } = null!;
 
-        // Image URL property
         [Required(ErrorMessage = "Image URL is required")]
-        [StringLength(500, ErrorMessage = "Image URL cannot exceed 500 characters")]
+        [StringLength(500)]
         public string? ImageUrl { get; set; }
 
         [ForeignKey("Category")]
         public int? CategoryId { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Unit Price must be greater than 0")]
+        [Range(0.01, double.MaxValue)]
         public decimal? UnitPrice { get; set; }
 
-        [Range(0, int.MaxValue, ErrorMessage = "Stock Quantity cannot be negative")]
+        [Range(0, int.MaxValue)]
         public int? StockQty { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int MinimumStockLevel { get; set; } = 10;
 
         [DataType(DataType.Date)]
         public DateTime? ExpiryDate { get; set; }
 
         public bool? IsActive { get; set; } = true;
 
-        // Navigation properties
         public virtual Category? Category { get; set; }
-
-        // ⭐ Add BillItems navigation
         public virtual ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
-
         public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
-
         public virtual ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
     }
 }

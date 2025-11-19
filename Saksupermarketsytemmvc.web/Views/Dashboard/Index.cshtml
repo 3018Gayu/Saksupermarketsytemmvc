@@ -40,17 +40,52 @@
     .row-gap {
         row-gap: 25px;
     }
+
+    .low-stock-alert {
+        margin-bottom: 20px;
+    }
 </style>
 
 <div class="container mt-4">
     <div class="dashboard-header text-center">
-        <h2 class="fw-bold"><i class="bi bi-speedometer2"></i> SAKSOFT SUPERMARKET SYSTEM DASHBOARD</h2>
+        <h2 class="fw-bold"><i class="bi bi-speedometer2"></i> SAKSOFT SUPERMARKET DASHBOARD</h2>
         <p class="mb-0">Quick analytics overview of supermarket operations</p>
     </div>
 
+    @* Low Stock Alert: Only for Inventory Manager or Admin *@
+    @if ((userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase) ||
+        userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)) &&
+        Model.LowStockProducts.Any())
+    {
+        <div class="low-stock-alert">
+            @foreach (var item in Model.LowStockProducts)
+            {
+                string alertClass = "";
+                if (item.StockQty < 5)
+                {
+                    alertClass = "alert-danger"; // red
+                }
+                else if (item.StockQty < 10)
+                {
+                    alertClass = "alert-warning"; // yellow
+                }
+                <div class="alert @alertClass d-flex align-items-center" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                        <strong>@item.Name:</strong> @item.StockQty remaining
+                        @if (item.StockQty < 5)
+                        {
+                            <span class="fw-bold">— HURRY UP! Refill stock!</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
     <div class="row justify-content-center row-gap">
 
-        @* Admin or Inventory Manager: Products *@
+        @* Products, Categories, Suppliers: Admin + Inventory Manager *@
         @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) || userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase))
         {
             <div class="col-md-3">
@@ -67,7 +102,7 @@
                     <i class="bi bi-tags-fill text-success stat-icon"></i>
                     <h5 class="card-title">Categories</h5>
                     <h2 class="text-success fw-bold">@Model.CategoryCount</h2>
-                    <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-success btn-sm mt-2">View Details</a>
+                    <a asp-controller="Category" asp-action="Index" class="btn btn-outline-success btn-sm mt-2">View Details</a>
                 </div>
             </div>
 
@@ -76,12 +111,12 @@
                     <i class="bi bi-truck text-warning stat-icon"></i>
                     <h5 class="card-title">Suppliers</h5>
                     <h2 class="text-warning fw-bold">@Model.SupplierCount</h2>
-                    <a asp-controller="Suppliers" asp-action="Index" class="btn btn-outline-warning btn-sm mt-2">View Details</a>
+                    <a asp-controller="Supplier" asp-action="Index" class="btn btn-outline-warning btn-sm mt-2">View Details</a>
                 </div>
             </div>
         }
 
-        @* Admin or Cashier: Customers *@
+        @* Customers, Orders: Admin + Cashier *@
         @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) || userRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
         {
             <div class="col-md-3">
@@ -89,21 +124,21 @@
                     <i class="bi bi-people-fill text-info stat-icon"></i>
                     <h5 class="card-title">Customers</h5>
                     <h2 class="text-info fw-bold">@Model.CustomerCount</h2>
-                    <a asp-controller="Customers" asp-action="Index" class="btn btn-outline-info btn-sm mt-2">View Details</a>
+                    <a asp-controller="Customer" asp-action="Index" class="btn btn-outline-info btn-sm mt-2">View Details</a>
                 </div>
             </div>
 
             <div class="col-md-3">
                 <div class="card stat-card text-center p-4 shadow-sm">
                     <i class="bi bi-receipt-cutoff text-danger stat-icon"></i>
-                    <h5 class="card-title">Total Orders</h5>
+                    <h5 class="card-title">Orders</h5>
                     <h2 class="text-danger fw-bold">@Model.OrdersCount</h2>
                     <a asp-controller="Orders" asp-action="Index" class="btn btn-outline-danger btn-sm mt-2">View Details</a>
                 </div>
             </div>
         }
 
-        @* Admin only: Users *@
+        @* Users: Admin only *@
         @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
         {
             <div class="col-md-3">

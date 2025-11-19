@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
+    [Authorize(Roles = "Admin,Inventory Manager")]
     public class ProductsController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -28,24 +28,20 @@ namespace Saksupermarketsytemmvc.web.Controllers
         }
 
         // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null) return NotFound();
-
             var product = await _context.Products
                                         .Include(p => p.Category)
                                         .FirstOrDefaultAsync(p => p.ProductId == id);
-
             if (product == null) return NotFound();
-
             return View(product);
         }
 
         // GET: Products/Create
         public IActionResult Create()
         {
-            LoadCategories();
-            return View();
+            PopulateCategories();
+            return View(new Products());
         }
 
         // POST: Products/Create
@@ -53,79 +49,62 @@ namespace Saksupermarketsytemmvc.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Products product)
         {
-            if (string.IsNullOrWhiteSpace(product.ImageUrl))
-                ModelState.AddModelError("ImageUrl", "Image URL is required.");
-
             if (ModelState.IsValid)
             {
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Product added successfully.";
+                TempData["SuccessMessage"] = "Product added successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadCategories();
+            PopulateCategories(product.CategoryId);
             return View(product);
         }
 
         // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null) return NotFound();
-
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            LoadCategories();
+            PopulateCategories(product.CategoryId);
             return View(product);
         }
 
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Products products)
+        public async Task<IActionResult> Edit(int id, Products product)
         {
-            if (id != products.ProductId) return NotFound();
-
-            if (string.IsNullOrWhiteSpace(products.ImageUrl))
-                ModelState.AddModelError("ImageUrl", "Image URL is required.");
+            if (id != product.ProductId) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Products.Update(products);
+                    _context.Update(product);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Product updated successfully.";
+                    TempData["SuccessMessage"] = "Product updated successfully!";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(products.ProductId))
-                        return NotFound();
+                    if (!ProductExists(id)) return NotFound();
                     throw;
                 }
-
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadCategories();
-            return View(products);
+            PopulateCategories(product.CategoryId);
+            return View(product);
         }
 
         // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id, string errorMessage = null)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null) return NotFound();
-
             var product = await _context.Products
                                         .Include(p => p.Category)
                                         .FirstOrDefaultAsync(p => p.ProductId == id);
-
             if (product == null) return NotFound();
-
-            if (!string.IsNullOrEmpty(errorMessage))
-                ViewBag.ErrorMessage = errorMessage;
-
             return View(product);
         }
 
@@ -135,40 +114,21 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);
-
             if (product != null)
             {
-                try
-                {
-                    _context.Products.Remove(product);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Product deleted successfully.";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateException ex)
-                {
-                    // If FK constraint exists, show warning in Delete page
-                    string errorMessage = "Cannot delete this product because it is linked with existing orders.";
-                    return RedirectToAction(nameof(Delete), new { id, errorMessage });
-                }
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Product deleted successfully!";
             }
-
             return RedirectToAction(nameof(Index));
         }
 
-        private void LoadCategories()
-        {
-            ViewBag.Categories = _context.Categories
-                                         .Select(c => new SelectListItem
-                                         {
-                                             Value = c.CategoryId.ToString(),
-                                             Text = c.CategoryName
-                                         }).ToList();
-        }
+        private bool ProductExists(int id) => _context.Products.Any(p => p.ProductId == id);
 
-        private bool ProductExists(int id)
+        private void PopulateCategories(object selectedCategory = null)
         {
-            return _context.Products.Any(e => e.ProductId == id);
+            var categories = _context.Categories?.ToList() ?? new List<Category>();
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "CategoryName", selectedCategory);
         }
     }
 }
