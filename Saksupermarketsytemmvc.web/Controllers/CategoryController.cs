@@ -106,17 +106,20 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var category = await _context.Categories.FindAsync(id);
             if (category != null)
             {
-                try
-                {
-                    _context.Categories.Remove(category);
+                
+                    _context.Products.RemoveRange(_context.Products.Where(p => p.CategoryId == id));
+                _context.InventoryTransactions.RemoveRange(
+_context.InventoryTransactions.Where(it => it.Product.CategoryId == id));
+
+                _context.OrderDetails.RemoveRange(
+    _context.OrderDetails.Where(od => od.Product.CategoryId == id)
+);
+
+                _context.Categories.Remove(category);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Category deleted successfully!";
-                }
-                catch (DbUpdateException)
-                {
-                    TempData["ErrorMessage"] = "Cannot delete this category because it may be referenced elsewhere.";
-                    return RedirectToAction(nameof(Delete), new { id });
-                }
+                
+              
             }
             return RedirectToAction(nameof(Index));
         }

@@ -88,6 +88,9 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var customer = await _context.Customers.FindAsync(id);
             if (customer != null)
             {
+                _context.Orders.RemoveRange(_context.Orders.Where(o => o.CustomerId == id));
+                _context.OrderDetails.RemoveRange(_context.OrderDetails.Where(od => od.Order.CustomerId == id));
+                _context.Bills.RemoveRange(_context.Bills.Where(b => b.CustomerId == id));
                 _context.Customers.Remove(customer);
                 await _context.SaveChangesAsync();
             }

@@ -116,6 +116,8 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
+                _context.InventoryTransactions.RemoveRange(_context.InventoryTransactions.Where(it => it.ProductId == id));
+                _context.OrderDetails.RemoveRange(_context.OrderDetails.Where(od => od.ProductId == id));
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Product deleted successfully!";

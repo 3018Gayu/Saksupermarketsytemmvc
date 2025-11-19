@@ -21,33 +21,44 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _config = config;
         }
 
+        // --------------------- LOGIN -----------------------------
         [HttpGet]
         public IActionResult Login() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string Role)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            var user = await _context.Users.FirstOrDefaultAsync(u =>
-                u.UserEmail == model.Email && u.Isactive == "Active");
+            // Check if user with this email exists
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserEmail == model.Email);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            if (user == null)
             {
-                ModelState.AddModelError("", "Invalid credentials or inactive account.");
+                ModelState.AddModelError("", "No user found with this email.");
                 return View(model);
             }
 
-            if (!string.Equals(user.UserRole, Role, StringComparison.OrdinalIgnoreCase))
+            // Check if user is active
+            if (user.Isactive != "Active")
             {
-                ModelState.AddModelError("", "Role mismatch. Please select your correct role.");
+                ModelState.AddModelError("", "Your account is inactive. Please contact admin.");
                 return View(model);
             }
 
-            // JWT Generation
+            // Check password
+            if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            {
+                ModelState.AddModelError("", "Incorrect password.");
+                return View(model);
+            }
+
+            // ----------- GENERATE JWT TOKEN ----------------
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.UserName),
@@ -62,12 +73,15 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 Issuer = _config["Jwt:Issuer"],
                 Audience = _config["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature
+                )
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
+            // Save JWT in cookie
             HttpContext.Response.Cookies.Append("jwtToken", tokenString, new CookieOptions
             {
                 HttpOnly = true,
@@ -79,6 +93,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Welcome");
         }
 
+        // --------------------- REGISTER -----------------------------
         [HttpGet]
         public IActionResult Register() => View();
 
@@ -86,7 +101,8 @@ namespace Saksupermarketsytemmvc.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
             if (await _context.Users.AnyAsync(u => u.UserEmail == model.Email))
             {
@@ -110,6 +126,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
+        // --------------------- FORGOT PASSWORD -----------------------------
         [HttpGet]
         public IActionResult ForgotPassword() => View();
 
@@ -118,6 +135,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserEmail == model.Email);
+
             if (user == null)
             {
                 ModelState.AddModelError("", "Email not found.");
@@ -131,6 +149,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
+        // --------------------- LOGOUT -----------------------------
         [HttpGet]
         public IActionResult Logout()
         {
@@ -138,6 +157,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             return RedirectToAction("Login");
         }
 
+        // --------------------- WELCOME PAGE -----------------------------
         [HttpGet]
         [Authorize]
         public IActionResult Welcome()

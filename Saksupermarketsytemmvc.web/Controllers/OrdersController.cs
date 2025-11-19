@@ -126,6 +126,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order != null)
             {
+                _context.OrderDetails.RemoveRange(_context.OrderDetails.Where(od => od.OrderId == id));
                 _context.Orders.Remove(order);
                 await _context.SaveChangesAsync();
             }
