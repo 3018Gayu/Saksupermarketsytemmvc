@@ -1,10 +1,39 @@
 ﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.Bill>
+
 @{
     ViewData["Title"] = "Daily Sales Report";
     var date = ViewBag.Date as DateTime? ?? DateTime.Today;
+    var categories = ViewBag.Categories as List<Saksupermarketsytemmvc.web.Models.Category> ?? new List<Saksupermarketsytemmvc.web.Models.Category>();
+    int selectedCategory = ViewBag.CategoryId ?? 0;
 }
 
 <h2>Daily Sales Report - @date.ToString("dd MMM yyyy")</h2>
+
+<!-- Filters Section -->
+<form method="get" class="form-inline mb-3">
+    <label class="mr-2">Select Date:</label>
+    <input type="date" name="date" value="@date.ToString("yyyy-MM-dd")" class="form-control mr-3" />
+
+    <label class="mr-2">Category:</label>
+    <select name="categoryId" class="form-control mr-3">
+        <option value="0" selected="@(selectedCategory == 0 ? "selected" : null)">All</option>
+        @foreach (var c in categories)
+        {
+            <option value="@c.CategoryId" selected="@(selectedCategory == c.CategoryId ? "selected" : null)">@c.CategoryName</option>
+        }
+    </select><br />
+
+    <button class="btn btn-primary">Filter</button>
+</form>
+
+<div class="mb-3">
+    <a href="/Reports/DailySalesPdf?date=@date.ToString("yyyy-MM-dd")&categoryId=@selectedCategory" class="btn btn-danger">
+        Download PDF
+    </a>
+    <a href="/Reports/DailySalesExcel?date=@date.ToString("yyyy-MM-dd")&categoryId=@selectedCategory" class="btn btn-success">
+        Download Excel
+    </a>
+</div>
 
 @if (Model == null || !Model.Any())
 {
@@ -30,6 +59,7 @@ else
                     <td>@bill.BillDate.ToString("dd/MM/yyyy")</td>
                     <td>@bill.TotalAmount.ToString("C")</td>
                 </tr>
+
                 <tr>
                     <td colspan="4">
                         <table class="table table-sm table-bordered">

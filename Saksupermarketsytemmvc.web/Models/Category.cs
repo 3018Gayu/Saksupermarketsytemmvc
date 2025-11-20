@@ -1,15 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace Saksupermarketsytemmvc.web.Models;
-
-public partial class Category
+namespace Saksupermarketsytemmvc.web.Models
 {
-    public int CategoryId { get; set; }
+    public partial class Category
+    {
+        [Key]
+        public int CategoryId { get; set; }
 
-    public string? CategoryName { get; set; }
+        [Required(ErrorMessage = "Category Name is required")]
+        [StringLength(100)]
+        public string CategoryName { get; set; } = string.Empty;
 
-    public string? Description { get; set; }
+        [StringLength(500)]
+        public string? Description { get; set; }
 
-    public virtual ICollection<Products> Products { get; set; } = new List<Products>();
+        // Navigation Property (never null)
+        public virtual ICollection<Products> Products { get; set; } = new List<Products>();
+    }
 }

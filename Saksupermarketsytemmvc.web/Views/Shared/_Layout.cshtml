@@ -125,9 +125,8 @@
                                 <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index" data-title="Customers"><i class="bi bi-people"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="User" asp-action="Index" data-title="Users"><i class="bi bi-person-badge"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Billing" asp-action="Create" data-title="Billing"><i class="bi bi-currency-dollar"></i></a></li>
-                                @* Reports Links *@
-                                <li class="nav-item"><a class="nav-link" asp-controller="Reports" asp-action="DailySales" data-title="Daily Sales"><i class="bi bi-calendar-day"></i></a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Reports" asp-action="WeeklySales" data-title="Weekly Sales"><i class="bi bi-calendar-week"></i></a></li>
+                                @* Reports Menu *@
+                                <li class="nav-item"><a class="nav-link" asp-controller="Reports" asp-action="Index" data-title="Reports"><i class="bi bi-bar-chart-line"></i></a></li>
                             }
                             @* Cashier Menu *@
                             else if (User.IsInRole("Cashier"))
@@ -135,17 +134,8 @@
                                 <li class="nav-item"><a class="nav-link" asp-controller="Orders" asp-action="Index" data-title="Orders"><i class="bi bi-receipt"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index" data-title="Customers"><i class="bi bi-people"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Billing" asp-action="Create" data-title="Billing"><i class="bi bi-currency-dollar"></i></a></li>
-                                @* Reports Links for Cashier *@
                                 <li class="nav-item"><a class="nav-link" asp-controller="Reports" asp-action="DailySales" data-title="Daily Sales"><i class="bi bi-calendar-day"></i></a></li>
                                 <li class="nav-item"><a class="nav-link" asp-controller="Reports" asp-action="WeeklySales" data-title="Weekly Sales"><i class="bi bi-calendar-week"></i></a></li>
-                            }
-                            @* Inventory Manager Menu *@
-                            else if (User.IsInRole("Inventory Manager"))
-                            {
-                                <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index" data-title="Products"><i class="bi bi-box-seam"></i></a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index" data-title="Categories"><i class="bi bi-tags"></i></a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="Supplier" asp-action="Index" data-title="Suppliers"><i class="bi bi-truck"></i></a></li>
-                                <li class="nav-item"><a class="nav-link" asp-controller="InventoryTransaction" asp-action="Index" data-title="Inventory"><i class="bi bi-boxes"></i></a></li>
                             }
                         </ul>
                     }
@@ -156,14 +146,10 @@
                     @if (isAuthenticated)
                     {
                         <li class="nav-item">
-                            <span class="nav-link" data-title="@userName">
-                                <i class="bi bi-person-circle"></i>
-                            </span>
+                            <span class="nav-link" data-title="@userName"><i class="bi bi-person-circle"></i></span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Account" asp-action="Logout" data-title="Logout">
-                                <i class="bi bi-box-arrow-right"></i>
-                            </a>
+                            <a class="nav-link" asp-controller="Account" asp-action="Logout" data-title="Logout"><i class="bi bi-box-arrow-right"></i></a>
                         </li>
                     }
                     else

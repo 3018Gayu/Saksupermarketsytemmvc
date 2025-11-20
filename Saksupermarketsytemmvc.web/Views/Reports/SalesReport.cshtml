@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.Bill>
+
+@{
+    ViewData["Title"] = "Sales Report";
+    DateTime start = ViewBag.Start;
+    DateTime end = ViewBag.End;
+}
+
+<h2>Sales Report (@start.ToString("dd-MM-yyyy") - @end.ToString("dd-MM-yyyy"))</h2>
+
+<div class="mb-3">
+    <a href="@Url.Action("SalesReportPdf", new { startDate = start, endDate = end })" class="btn btn-danger me-2">
+        <i class="bi bi-file-earmark-pdf"></i> Download PDF
+    </a>
+    <a href="@Url.Action("SalesReportExcel", new { startDate = start, endDate = end })" class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Download Excel
+    </a>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Invoice</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bill in Model)
+        {
+            <tr>
+                <td>@bill.BillId</td>
+                <td>@(bill.Customer?.CustomerName ?? "Walk-in")</td>
+                <td>@bill.BillDate.ToString("dd-MM-yyyy")</td>
+                <td>@bill.TotalAmount.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>

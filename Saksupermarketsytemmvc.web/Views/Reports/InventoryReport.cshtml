@@ -1,0 +1,63 @@
+﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.InventoryTransaction>
+
+@{
+    ViewData["Title"] = "Inventory Transactions";
+    var categories = ViewBag.Categories as List<Saksupermarketsytemmvc.web.Models.Category>;
+    int selectedCategory = ViewBag.CategoryId ?? 0;
+}
+
+<div class="text-center">
+    <h2 class="mt-4 mb-4 text-primary"><i class="bi bi-box-seam"></i> Inventory Transactions</h2>
+
+    <!-- Category Filter -->
+    <form method="get" class="form-inline mb-3 text-start">
+        <label class="mr-2">Category:</label>
+        <select name="categoryId" class="form-control mr-2">
+            <option value="0" selected="@(selectedCategory == 0 ? "selected" : null)">All</option>
+            @foreach (var c in categories)
+            {
+                <option value="@c.CategoryId" selected="@(selectedCategory == c.CategoryId ? "selected" : null)">
+                    @c.CategoryName
+                </option>
+            }
+        </select>
+        <button class="btn btn-primary">Filter</button>
+    </form>
+
+    <!-- Buttons -->
+    <div class="mb-3 text-end">
+        <a asp-action="InventoryReportPdf" asp-route-categoryId="@selectedCategory" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+        <a asp-action="InventoryReportExcel" asp-route-categoryId="@selectedCategory" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Download Excel
+        </a>
+    </div>
+
+    <!-- Transactions Table -->
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Transaction ID</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.TransId</td>
+                    <td>@(item.Product?.Name ?? "N/A")</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Type</td>
+                    <td>@(item.Date.HasValue ? item.Date.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")</td>
+                    <td>@(item.Remarks ?? "")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

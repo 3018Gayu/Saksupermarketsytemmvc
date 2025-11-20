@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -24,7 +25,20 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var products = await _context.Products
                                          .Include(p => p.Category)
                                          .ToListAsync();
+
+            // StockStatus is computed in model, no need to assign
             return View(products);
+        }
+
+        // GET: Products/StockStatus
+        public async Task<IActionResult> StockStatus()
+        {
+            var products = await _context.Products
+                                         .Include(p => p.Category)
+                                         .ToListAsync();
+
+            // StockStatus is computed in model, no need to assign
+            return View(products); // StockStatus.cshtml view
         }
 
         // GET: Products/Details/5
@@ -34,6 +48,8 @@ namespace Saksupermarketsytemmvc.web.Controllers
                                         .Include(p => p.Category)
                                         .FirstOrDefaultAsync(p => p.ProductId == id);
             if (product == null) return NotFound();
+
+            // StockStatus is computed in model, no need to assign
             return View(product);
         }
 
@@ -116,8 +132,13 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                _context.InventoryTransactions.RemoveRange(_context.InventoryTransactions.Where(it => it.ProductId == id));
-                _context.OrderDetails.RemoveRange(_context.OrderDetails.Where(od => od.ProductId == id));
+                _context.InventoryTransactions.RemoveRange(
+                    _context.InventoryTransactions.Where(it => it.ProductId == id)
+                );
+                _context.OrderDetails.RemoveRange(
+                    _context.OrderDetails.Where(od => od.ProductId == id)
+                );
+
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Product deleted successfully!";

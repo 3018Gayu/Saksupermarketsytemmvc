@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Reports Dashboard";
+}
+
+<h2 class="mb-4 text-primary text-center">
+    <i class="bi bi-bar-chart-line-fill"></i> Reports Dashboard
+</h2>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-primary h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-cash-stack fs-1 text-success mb-2"></i>
+                <h5 class="card-title">Sales Report</h5>
+                <p class="card-text">View detailed sales reports by date, week, month, or category.</p>
+                <a href="@Url.Action("SalesReport", "Reports")" class="btn btn-primary btn-sm">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-warning h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-box-seam fs-1 text-warning mb-2"></i>
+                <h5 class="card-title">Inventory Report</h5>
+                <p class="card-text">Track your product inventory, categories, and transactions.</p>
+                <a href="@Url.Action("InventoryReport", "Reports")" class="btn btn-warning btn-sm">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-info h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-people fs-1 text-info mb-2"></i>
+                <h5 class="card-title">Customer Report</h5>
+                <p class="card-text">See customer details, activity, and purchase history.</p>
+                <a href="@Url.Action("CustomerReport", "Reports")" class="btn btn-info btn-sm text-white">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-success h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-day fs-1 text-success mb-2"></i>
+                <h5 class="card-title">Daily Sales</h5>
+                <p class="card-text">Check sales for a specific day and category.</p>
+                <a href="@Url.Action("DailySales", "Reports")" class="btn btn-success btn-sm">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-secondary h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-week fs-1 text-secondary mb-2"></i>
+                <h5 class="card-title">Weekly Sales</h5>
+                <p class="card-text">Monitor weekly sales trends and category performance.</p>
+                <a href="@Url.Action("WeeklySales", "Reports")" class="btn btn-secondary btn-sm text-white">View Report</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-dark h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar3 fs-1 text-dark mb-2"></i>
+                <h5 class="card-title">Monthly Sales</h5>
+                <p class="card-text">Get a summary of sales by month and category.</p>
+                <a href="@Url.Action("MonthlySales", "Reports")" class="btn btn-dark btn-sm text-white">View Report</a>
+            </div>
+        </div>
+    </div>
+</div>

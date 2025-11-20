@@ -6,8 +6,16 @@
 
 <div class="d-flex justify-content-between mb-3">
     <h2>Products</h2>
-    <a class="btn btn-primary" asp-action="Create">Add Product</a>
+    <div>
+        <a class="btn btn-primary me-2" asp-action="Create">Add Product</a>
+        <a class="btn btn-success" asp-action="StockStatus">View Stock Status</a>
+    </div>
 </div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
 <table class="table table-bordered table-striped align-middle">
     <thead class="table-dark">
@@ -18,48 +26,33 @@
             <th>Name</th>
             <th>Price</th>
             <th>Expiry</th>
-            <th>Qty</th>
+            <th>Stock</th>
             <th>Actions</th>
         </tr>
     </thead>
-
     <tbody>
         @if (Model.Any())
         {
             int index = 1;
             foreach (var item in Model)
             {
-                // Get stock quantity safely, default 0 if null
-                int stockQty = item.StockQty.GetValueOrDefault();
-
-                // Determine stock color
-                string stockClass = "";
-                if (stockQty < 5)
+                string stockClass = item.StockStatus switch
                 {
-                    stockClass = "bg-danger text-white"; // red
-                }
-                else if (stockQty < 10)
-                {
-                    stockClass = "bg-warning text-dark"; // yellow
-                }
+                    "Out of Stock" => "bg-danger text-white",
+                    "Low Stock" => "bg-warning text-dark",
+                    _ => "bg-success text-white"
+                };
 
                 <tr>
                     <td>@index</td>
-
                     <td>
-                        <img src="@item.ImageUrl"
-                             style="width:100px; height:100px; object-fit:cover;"
-                             class="rounded shadow-sm" />
+                        <img src="@item.ImageUrl" style="width:100px; height:100px; object-fit:cover;" class="rounded shadow-sm" />
                     </td>
-
                     <td>@item.ProductCode</td>
                     <td>@item.Name</td>
                     <td>@item.UnitPrice?.ToString("C")</td>
                     <td>@item.ExpiryDate?.ToString("yyyy-MM-dd")</td>
-
-                    <!-- Stock with conditional coloring -->
-                    <td class="@stockClass">@stockQty</td>
-
+                    <td>@item.StockQty</td>  
                     <td>
                         <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-info btn-sm">View</a>
                         <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-warning btn-sm">Edit</a>
@@ -72,7 +65,7 @@
         else
         {
             <tr>
-                <td colspan="8" class="text-center">No products found.</td>
+                <td colspan="9" class="text-center">No products found.</td>
             </tr>
         }
     </tbody>

@@ -1,19 +1,21 @@
 ﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.Bill>
 
 @{
-    ViewData["Title"] = "Weekly Sales Report";
-    var start = ViewBag.Start as DateTime? ?? DateTime.Today.AddDays(-6);
-    var end = ViewBag.End as DateTime? ?? DateTime.Today;
+    ViewData["Title"] = "Monthly Sales Report";
+    int selectedMonth = ViewBag.Month ?? DateTime.Today.Month;
+    int selectedYear = ViewBag.Year ?? DateTime.Today.Year;
     var categories = ViewBag.Categories as List<Saksupermarketsytemmvc.web.Models.Category> ?? new List<Saksupermarketsytemmvc.web.Models.Category>();
     int selectedCategory = ViewBag.CategoryId ?? 0;
 }
 
-<h2>Weekly Sales Report - @start.ToString("dd MMM yyyy") to @end.ToString("dd MMM yyyy")</h2>
+<h2>Monthly Sales Report - @selectedMonth/@selectedYear</h2>
 
-<!-- Filters Section -->
 <form method="get" class="form-inline mb-3">
-    <label class="mr-2">Start Date:</label>
-    <input type="date" name="startDate" value="@start.ToString("yyyy-MM-dd")" class="form-control mr-3" />
+    <label class="mr-2">Month:</label>
+    <input type="number" name="month" min="1" max="12" value="@selectedMonth" class="form-control mr-3" />
+
+    <label class="mr-2">Year:</label>
+    <input type="number" name="year" value="@selectedYear" class="form-control mr-3" />
 
     <label class="mr-2">Category:</label>
     <select name="categoryId" class="form-control mr-3">
@@ -23,18 +25,18 @@
             <option value="@c.CategoryId" selected="@(selectedCategory == c.CategoryId ? "selected" : null)">@c.CategoryName</option>
         }
     </select>
-    <br />
+
     <button class="btn btn-primary">Filter</button>
 </form>
 
 <div class="mb-3">
-    <a href="/Reports/WeeklySalesPdf?startDate=@start.ToString("yyyy-MM-dd")&categoryId=@selectedCategory" class="btn btn-danger">Download PDF</a>
-    <a href="/Reports/WeeklySalesExcel?startDate=@start.ToString("yyyy-MM-dd")&categoryId=@selectedCategory" class="btn btn-success">Download Excel</a>
+    <a href="/Reports/MonthlySalesPdf?month=@selectedMonth&year=@selectedYear&categoryId=@selectedCategory" class="btn btn-danger">Download PDF</a>
+    <a href="/Reports/MonthlySalesExcel?month=@selectedMonth&year=@selectedYear&categoryId=@selectedCategory" class="btn btn-success">Download Excel</a>
 </div>
 
-@if (Model == null || !Model.Any())
+@if (!Model.Any())
 {
-    <p>No sales recorded for this week.</p>
+    <p>No sales recorded for this month.</p>
 }
 else
 {
@@ -56,7 +58,6 @@ else
                     <td>@bill.BillDate.ToString("dd/MM/yyyy")</td>
                     <td>@bill.TotalAmount.ToString("C")</td>
                 </tr>
-
                 <tr>
                     <td colspan="4">
                         <table class="table table-sm table-bordered">

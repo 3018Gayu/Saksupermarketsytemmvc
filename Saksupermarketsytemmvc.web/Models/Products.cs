@@ -43,5 +43,18 @@ namespace Saksupermarketsytemmvc.web.Models
         public virtual ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
         public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
         public virtual ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
+
+        // Computed property for stock status
+        [NotMapped]
+        public string StockStatus
+        {
+            get
+            {
+                int qty = StockQty ?? 0;
+                if (qty == 0) return "Out of Stock";
+                if (qty < MinimumStockLevel) return "Low Stock";
+                return "In Stock";
+            }
+        }
     }
 }

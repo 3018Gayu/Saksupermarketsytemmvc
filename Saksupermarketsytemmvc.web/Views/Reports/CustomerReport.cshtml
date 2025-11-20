@@ -1,0 +1,64 @@
+﻿@model IEnumerable<Saksupermarketsytemmvc.web.Models.Customer>
+
+@{
+    ViewData["Title"] = "Customer Report";
+    var start = ViewBag.Start as DateTime? ?? DateTime.Today.AddDays(-30);
+    var end = ViewBag.End as DateTime? ?? DateTime.Today;
+}
+
+<div class="text-center">
+    <h2 class="mt-4 mb-4 text-primary">
+        <i class="bi bi-people"></i> Customer Report
+    </h2>
+    <p>
+        <strong>From:</strong> @start.ToString("dd MMM yyyy")
+        <strong>To:</strong> @end.ToString("dd MMM yyyy")
+    </p>
+
+    <div class="mb-3">
+        <a class="btn btn-success me-2" asp-action="CustomerReportPdf" asp-route-startDate="@start.ToString("yyyy-MM-dd")" asp-route-endDate="@end.ToString("yyyy-MM-dd")">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+        <a class="btn btn-primary" asp-action="CustomerReportExcel" asp-route-startDate="@start.ToString("yyyy-MM-dd")" asp-route-endDate="@end.ToString("yyyy-MM-dd")">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Download Excel
+        </a>
+    </div>
+
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Customer ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Loyalty Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var customer in Model)
+                {
+                    if (customer != null)
+                    {
+                        <tr>
+                            <td>@customer.CustomerId</td>
+                            <td>@customer.CustomerName</td>
+                            <td>@customer.CustEmail</td>
+                            <td>@customer.CustPhone</td>
+                            <td>@customer.CustAddress</td>
+                            <td>@customer.LoyaltyPoints</td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center">No customers found in this date range.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
