@@ -1,0 +1,59 @@
+﻿@model Saksupermarketsytemmvc.web.Models.CustomerPurchaseHistory
+
+@{
+    ViewData["Title"] = "Purchase History";
+}
+
+<h2 class="text-primary mb-3">
+    <i class="bi bi-receipt-cutoff"></i> @Model.Customer.CustomerName — Purchase History
+</h2>
+
+<div class="mb-3">
+    <strong>Email:</strong> @Model.Customer.CustEmail <br />
+    <strong>Phone:</strong> @Model.Customer.CustPhone <br />
+    <strong>Address:</strong> @Model.Customer.CustAddress
+</div>
+
+@if (Model.Bills != null && Model.Bills.Any())
+{
+    @foreach (var bill in Model.Bills)
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    Invoice #@bill.BillId — @bill.BillDate.ToString("dd MMM yyyy")
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <p><strong>Total Amount:</strong> @bill.TotalAmount.ToString("C")</p>
+
+                <table class="table table-bordered">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in bill.BillItems)
+                        {
+                            <tr>
+                                <td>@item.Product.Name</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.UnitPrice.ToString("C")</td>
+                                <td>@(item.Quantity* item.UnitPrice).ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-info">This customer has no purchase history.</div>
+}

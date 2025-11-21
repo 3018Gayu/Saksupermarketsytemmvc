@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
@@ -10,14 +11,30 @@ namespace Saksupermarketsytemmvc.web.Controllers
     public class CustomerController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
+
         public CustomerController(SaksoftSupermarketSystemContext context)
         {
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        // ----------------- CUSTOMER LIST WITH SEARCH -----------------
+        public async Task<IActionResult> Index(string search)
         {
-            var customers = await _context.Customers.ToListAsync();
+            var query = _context.Customers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(c =>
+                    c.CustomerName.Contains(search) ||
+                    c.CustPhone.Contains(search));
+            }
+
+            var customers = await query
+                .OrderBy(c => c.CustomerName)
+                .ToListAsync();
+
+            ViewBag.Search = search;
+
             return View(customers);
         }
 
@@ -25,6 +42,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         {
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return NotFound();
+
             return View(customer);
         }
 
@@ -56,6 +74,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         public async Task<IActionResult> Edit(int id, Customer customer)
         {
             if (id != customer.CustomerId) return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
@@ -94,7 +113,30 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 _context.Customers.Remove(customer);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction(nameof(Index));
+        }
+
+        // ----------------- PURCHASE HISTORY -----------------
+        public async Task<IActionResult> PurchaseHistory(int id)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer == null) return NotFound();
+
+            var bills = await _context.Bills
+                .Include(b => b.BillItems)
+                .ThenInclude(bi => bi.Product)
+                .Where(b => b.CustomerId == id)
+                .OrderByDescending(b => b.BillDate)
+                .ToListAsync();
+
+            var viewModel = new CustomerPurchaseHistory
+            {
+                Customer = customer,
+                Bills = bills
+            };
+
+            return View(viewModel);
         }
     }
 }

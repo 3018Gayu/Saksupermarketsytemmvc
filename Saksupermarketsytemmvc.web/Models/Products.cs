@@ -13,38 +13,46 @@ namespace Saksupermarketsytemmvc.web.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string? ProductCode { get; set; }
 
-        [Required(ErrorMessage = "Product Name is required")]
-        [StringLength(100)]
+        [Required, StringLength(100)]
         public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "Image URL is required")]
-        [StringLength(500)]
+        [Required, StringLength(500)]
         public string? ImageUrl { get; set; }
 
-        [ForeignKey("Category")]
         public int? CategoryId { get; set; }
 
         [Column(TypeName = "decimal(10,2)")]
-        [Range(0.01, double.MaxValue)]
         public decimal? UnitPrice { get; set; }
 
-        [Range(0, int.MaxValue)]
         public int? StockQty { get; set; }
-
-        [Range(0, int.MaxValue)]
         public int MinimumStockLevel { get; set; } = 10;
 
-        [DataType(DataType.Date)]
         public DateTime? ExpiryDate { get; set; }
-
         public bool? IsActive { get; set; } = true;
 
-        public virtual Category? Category { get; set; }
+        // ===========================
+        // TAX & DISCOUNT
+        // ===========================
+
+        [Range(0, 100)]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal ProductDiscountRate { get; set; } = 0;
+
+        [Range(0, 100)]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal ProductTaxRate { get; set; } = 0;
+
+        // ===========================
+        // RELATIONSHIPS
+        // ===========================
         public virtual ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
         public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
         public virtual ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
+        public virtual Category? Category { get; set; }
 
-        // Computed property for stock status
+        // ===========================
+        // COMPUTED PROPERTY
+        // ===========================
         [NotMapped]
         public string StockStatus
         {
