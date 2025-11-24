@@ -30,10 +30,6 @@ namespace Saksupermarketsytemmvc.web.Models
         public DateTime? ExpiryDate { get; set; }
         public bool? IsActive { get; set; } = true;
 
-        // ===========================
-        // TAX & DISCOUNT
-        // ===========================
-
         [Range(0, 100)]
         [Column(TypeName = "decimal(5,2)")]
         public decimal ProductDiscountRate { get; set; } = 0;
@@ -42,17 +38,11 @@ namespace Saksupermarketsytemmvc.web.Models
         [Column(TypeName = "decimal(5,2)")]
         public decimal ProductTaxRate { get; set; } = 0;
 
-        // ===========================
-        // RELATIONSHIPS
-        // ===========================
         public virtual ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
         public virtual ICollection<InventoryTransaction> InventoryTransactions { get; set; } = new List<InventoryTransaction>();
         public virtual ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
         public virtual Category? Category { get; set; }
 
-        // ===========================
-        // COMPUTED PROPERTY
-        // ===========================
         [NotMapped]
         public string StockStatus
         {

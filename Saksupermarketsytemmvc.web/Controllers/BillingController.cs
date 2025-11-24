@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -39,8 +40,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
             bill.BillDate = DateTime.Now;
 
-            // Allow walk-in customer
             if (bill.CustomerId == 0) bill.CustomerId = null;
+
+            // Calculate total amount automatically
+            bill.TotalAmount = bill.BillItems.Sum(i => i.Quantity * i.UnitPrice);
 
             _context.Bills.Add(bill);
 

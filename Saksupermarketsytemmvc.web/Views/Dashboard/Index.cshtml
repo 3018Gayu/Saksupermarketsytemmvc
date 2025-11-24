@@ -1,198 +1,188 @@
 ﻿@model Saksupermarketsytemmvc.web.Models.Dashboard
 @{
-    ViewData["Title"] = "Super Market Dashboard";
-    var userRole = ViewData["UserRole"]?.ToString() ?? "";
+    ViewData["Title"] = "Dashboard";
+    var userRole = User.IsInRole("Admin") ? "Admin" :
+                   User.IsInRole("Cashier") ? "Cashier" :
+                   User.IsInRole("Inventory Manager") ? "Inventory Manager" : "";
 }
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-<style>
-    body {
-        background: #f5f7fa;
-    }
-
-    .dashboard-header {
-        background: linear-gradient(90deg, #007bff, #00b4d8);
-        padding: 25px;
-        border-radius: 12px;
-        color: white;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .stat-card {
-        border-radius: 15px;
-        transition: 0.3s;
-        background: white;
-        border: none;
-    }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-    .stat-icon {
-        font-size: 40px;
-        margin-bottom: 10px;
-    }
-
-    .row-gap {
-        row-gap: 25px;
-    }
-
-    .low-stock-alert, .expired-alert {
-        margin-bottom: 20px;
-    }
-</style>
-
 <div class="container mt-4">
-    <div class="dashboard-header text-center">
-        <h2 class="fw-bold"><i class="bi bi-speedometer2"></i> SAKSOFT SUPERMARKET DASHBOARD</h2>
-        <p class="mb-0">Quick analytics overview of supermarket operations</p>
-    </div>
+    <h2>@userRole DASHBOARD</h2>
 
-    <!-- Low Stock Alerts -->
-    @if ((userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase) || userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)) && Model.LowStockProducts.Any())
+    @* ---------------- ADMIN ---------------- *@
+    @if (userRole == "Admin")
     {
-        <div class="low-stock-alert">
-            @foreach (var item in Model.LowStockProducts)
-            {
-                var alertClass = item.StockQty < 5 ? "alert-danger" : "alert-warning";
-                <div class="alert alert-dismissible fade show @alertClass d-flex align-items-center" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <div>
-                        <strong>@item.Name:</strong> @item.StockQty remaining
-                        @if (item.StockQty < 5)
-                        {
-                            <span class="fw-bold"> — HURRY UP! Refill stock!</span>
-                        }
-                    </div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card p-3 text-center bg-primary text-white">
+                    Total Sales<br>₹@Model.TotalSales
                 </div>
-            }
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 text-center bg-success text-white">
+                    Customers<br>@Model.CustomerCount
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 text-center bg-danger text-white">
+                    Low Stock<br>@Model.LowStockCount
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 text-center bg-secondary text-white">
+                    Users<br>@Model.UserCount
+                </div>
+            </div>
         </div>
+
+        <h5>Sales Last 7 Days</h5>
+        <canvas id="salesChart" height="100"></canvas>
+
+        <h5 class="mt-4">Recent Transactions</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Amount</th><th>Cashier</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.RecentTransactions)
+                {
+                    <tr>
+                        <td>@t.Date</td>
+                        <td>@("INV" + t.InvoiceNo)</td>
+                        <td>@t.Customer</td>
+                        <td>₹@t.Amount</td>
+                        <td>@t.Cashier</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     }
 
-    <!-- Expired Products Alerts -->
-    @if ((userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase) || userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase)) && Model.ExpiredProducts.Any())
+    @* ---------------- CASHIER ---------------- *@
+    @if (userRole == "Cashier")
     {
-        <div class="expired-alert">
-            @foreach (var item in Model.ExpiredProducts)
-            {
-                <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
-                    <div>
-                        <strong>@item.Name:</strong> Expired on @item.ExpiryDate?.ToString("dd MMM yyyy")
-                        <span class="fw-bold"> — REMOVE or RESTOCK IT immediately!</span>
-                    </div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card p-3 text-center bg-primary text-white">
+                    Today's Sales<br>₹@Model.TodaysSales
                 </div>
-            }
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3 text-center bg-success text-white">
+                    Invoices Today<br>@Model.TodaysInvoices
+                </div>
+            </div>
         </div>
+
+        <h5>Quick Billing Panel</h5>
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="list-group">
+                    <a href="@Url.Action("Create", "Billing")" class="list-group-item list-group-item-action">
+                        1) Create New Invoice
+                    </a>
+
+                    <a href="@Url.Action("Index", "Customer")" class="list-group-item list-group-item-action">
+                        2) Search Customer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <h5>Recent Bills</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr><th>Time</th><th>Invoice</th><th>Customer</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model.RecentBills)
+                {
+                    <tr>
+                        <td>@b.Date</td>
+                        <td>@("INV" + b.InvoiceNo)</td>
+                        <td>@b.Customer</td>
+                        <td>₹@b.Amount</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     }
 
-    <div class="row justify-content-center row-gap">
-        <!-- Sales Graph -->
-        <div class="card mt-4 p-4 shadow-sm">
-            <h5 class="card-title mb-3"><i class="bi bi-bar-chart-line-fill"></i> Last 7 Days Sales</h5>
-            <canvas id="salesChart" height="100"></canvas>
+    @* ---------------- INVENTORY MANAGER ---------------- *@
+    @if (userRole == "Inventory Manager")
+    {
+        <h5>Low Stock Alerts</h5>
+        @foreach (var p in Model.LowStockProducts)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @p.Name - @p.StockQty left
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <h5>Expired Products</h5>
+        @foreach (var p in Model.ExpiredProducts)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                @p.Name - Expired on @p.ExpiryDate?.ToString("dd/MM/yyyy")
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card p-3 text-center bg-primary text-white">
+                    Products<br>@Model.ProductsCount
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 text-center bg-success text-white">
+                    Suppliers<br>@Model.SupplierCount
+                </div>
+            </div>
         </div>
 
-        <!-- Stats Cards -->
-        @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) || userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase))
-        {
-            <div class="col-md-3">
-                <div class="card stat-card text-center p-4 shadow-sm">
-                    <i class="bi bi-box-seam text-primary stat-icon"></i>
-                    <h5 class="card-title">Products</h5>
-                    <h2 class="text-primary fw-bold">@Model.ProductsCount</h2>
-                    <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary btn-sm mt-2">View Details</a>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card stat-card text-center p-4 shadow-sm">
-                    <i class="bi bi-tags-fill text-success stat-icon"></i>
-                    <h5 class="card-title">Categories</h5>
-                    <h2 class="text-success fw-bold">@Model.CategoryCount</h2>
-                    <a asp-controller="Category" asp-action="Index" class="btn btn-outline-success btn-sm mt-2">View Details</a>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card stat-card text-center p-4 shadow-sm">
-                    <i class="bi bi-truck text-warning stat-icon"></i>
-                    <h5 class="card-title">Suppliers</h5>
-                    <h2 class="text-warning fw-bold">@Model.SupplierCount</h2>
-                    <a asp-controller="Supplier" asp-action="Index" class="btn btn-outline-warning btn-sm mt-2">View Details</a>
-                </div>
-            </div>
-        }
-
-        @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) || userRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
-        {
-            <div class="col-md-3">
-                <div class="card stat-card text-center p-4 shadow-sm">
-                    <i class="bi bi-people-fill text-info stat-icon"></i>
-                    <h5 class="card-title">Customers</h5>
-                    <h2 class="text-info fw-bold">@Model.CustomerCount</h2>
-                    <a asp-controller="Customer" asp-action="Index" class="btn btn-outline-info btn-sm mt-2">View Details</a>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card stat-card text-center p-4 shadow-sm">
-                    <i class="bi bi-receipt-cutoff text-danger stat-icon"></i>
-                    <h5 class="card-title">Orders</h5>
-                    <h2 class="text-danger fw-bold">@Model.OrdersCount</h2>
-                    <a asp-controller="Orders" asp-action="Index" class="btn btn-outline-danger btn-sm mt-2">View Details</a>
-                </div>
-            </div>
-        }
-
-        @if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-        {
-            <div class="col-md-3">
-                <div class="card stat-card text-center p-4 shadow-sm">
-                    <i class="bi bi-person-workspace text-secondary stat-icon"></i>
-                    <h5 class="card-title">Users</h5>
-                    <h2 class="text-secondary fw-bold">@Model.UserCount</h2>
-                    <a asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary btn-sm mt-2">View Details</a>
-                </div>
-            </div>
-        }
-    </div>
+        <h5>Recently Added Products</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr><th>Product ID</th><th>Product Name</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.RecentProducts)
+                {
+                    <tr>
+                        <td>@p.ProductId</td>
+                        <td>@p.Name</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    var ctx = document.getElementById('salesChart').getContext('2d');
-    var salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Last7DaysLabels)),
-            datasets: [{
-                label: 'Sales Amount (₹)',
-                data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Last7DaysSales)),
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                borderColor: 'rgba(0, 123, 255, 1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: { mode: 'index', intersect: false }
+    var ctx = document.getElementById('salesChart')?.getContext('2d');
+    if(ctx){
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Last7DaysLabels)),
+                datasets: [{
+                    label: 'Sales Amount (₹)',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Last7DaysSales)),
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
             },
-            scales: {
-                x: { beginAtZero: false },
-                y: { beginAtZero: true }
-            }
-        }
-    });
+            options: { responsive: true }
+        });
+    }
 </script>

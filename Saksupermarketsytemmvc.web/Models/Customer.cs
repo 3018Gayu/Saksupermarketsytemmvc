@@ -21,10 +21,8 @@ namespace Saksupermarketsytemmvc.web.Models
 
         public int LoyaltyPoints { get; set; }
 
-        // Existing relationship
         public virtual ICollection<Orders> Orders { get; set; } = new List<Orders>();
 
-        // Required for Bill relationship
         public virtual ICollection<Bill> Bills { get; set; } = new List<Bill>();
     }
 }

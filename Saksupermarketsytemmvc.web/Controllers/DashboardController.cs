@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
 using System;
 using System.Linq;
-using System.Security.Claims;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
+    [Authorize]
     public class DashboardController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -18,76 +18,93 @@ namespace Saksupermarketsytemmvc.web.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
-            var vm = new Dashboard();
-
-            // ---------------- ROLE BASED STATS --------------------
-            if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-            {
-                vm.ProductsCount = _context.Products.Count();
-                vm.CategoryCount = _context.Categories.Count();
-                vm.SupplierCount = _context.Suppliers.Count();
-                vm.CustomerCount = _context.Customers.Count();
-                vm.UserCount = _context.Users.Count();
-
-                vm.LowStockProducts = _context.Products
-                    .Where(p => p.StockQty <= p.MinimumStockLevel)
-                    .ToList();
-
-                vm.ExpiredProducts = _context.Products
-                    .Where(p => p.ExpiryDate != null && p.ExpiryDate <= DateTime.Today)
-                    .ToList();
-            }
-            else if (userRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
-            {
-                vm.CustomerCount = _context.Customers.Count();
-            }
-            else if (userRole.Equals("Inventory Manager", StringComparison.OrdinalIgnoreCase))
-            {
-                vm.ProductsCount = _context.Products.Count();
-                vm.CategoryCount = _context.Categories.Count();
-                vm.SupplierCount = _context.Suppliers.Count();
-
-                vm.LowStockProducts = _context.Products
-                    .Where(p => p.StockQty <= p.MinimumStockLevel)
-                    .ToList();
-
-                vm.ExpiredProducts = _context.Products
-                    .Where(p => p.ExpiryDate != null && p.ExpiryDate <= DateTime.Today)
-                    .ToList();
-            }
-
-            // ---------------- LAST 7 DAYS SALES USING BILLS --------------------
+            var dashboard = new Dashboard();
             var today = DateTime.Today;
 
-            var last7Days = Enumerable.Range(0, 7)
-                .Select(i => today.AddDays(-i))
-                .OrderBy(d => d)
-                .ToList();
+            // ---------------- ADMIN ----------------
+            if (User.IsInRole("Admin"))
+            {
+                dashboard.TotalSales = await _context.Bills.SumAsync(b => b.TotalAmount);
+                dashboard.CustomerCount = await _context.Customers.CountAsync();
+                dashboard.LowStockCount = await _context.Products.CountAsync(p => (p.StockQty ?? 0) < 10);
+                dashboard.UserCount = await _context.Users.CountAsync();
 
-            vm.Last7DaysLabels = last7Days.Select(d => d.ToString("dd MMM")).ToList();
+                dashboard.RecentTransactions = await _context.Bills
+                    .Include(b => b.Customer)
+                    .OrderByDescending(b => b.BillDate)
+                    .Take(10)
+                    .Select(b => new RecentTransactionDTO
+                    {
+                        Date = b.BillDate.ToString("dd/MM/yy"),
+                        InvoiceNo = b.BillId.ToString(),
+                        Customer = b.Customer != null ? b.Customer.CustomerName : "Walk-in",
+                        Amount = b.TotalAmount,
+                        Cashier = "N/A"
+                    }).ToListAsync();
 
-            // get all bills in range once
-            var billsInRange = _context.Bills
-                .Where(b => last7Days.Contains(b.BillDate.Date))
-                .ToList();
+                var salesData = await _context.Bills
+                    .Where(b => b.BillDate >= today.AddDays(-6))
+                    .GroupBy(b => b.BillDate.Date)
+                    .Select(g => new { Date = g.Key, TotalAmount = g.Sum(x => x.TotalAmount) })
+                    .OrderBy(d => d.Date)
+                    .ToListAsync();
 
-            // group bills by date and sum amounts
-            var salesByDate = billsInRange
-                .GroupBy(b => b.BillDate.Date)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(x => x.TotalAmount)
-                );
+                dashboard.Last7DaysLabels = salesData.Select(s => s.Date.ToString("dd MMM")).ToList();
+                dashboard.Last7DaysSales = salesData.Select(s => s.TotalAmount).ToList();
+            }
 
-            vm.Last7DaysSales = last7Days
-                .Select(d => salesByDate.ContainsKey(d) ? salesByDate[d] : 0m)
-                .ToList();
+            // ---------------- CASHIER ----------------
+            if (User.IsInRole("Cashier"))
+            {
+                dashboard.TodaysSales = await _context.Bills
+                    .Where(b => b.BillDate.Date == today)
+                    .SumAsync(b => b.TotalAmount);
 
-            ViewData["UserRole"] = userRole;
-            return View(vm);
+                dashboard.TodaysInvoices = await _context.Bills
+                    .Where(b => b.BillDate.Date == today)
+                    .CountAsync();
+
+                dashboard.RecentBills = await _context.Bills
+                    .Where(b => b.BillDate.Date == today)
+                    .Include(b => b.Customer)
+                    .OrderByDescending(b => b.BillDate)
+                    .Take(10)
+                    .Select(b => new RecentTransactionDTO
+                    {
+                        Date = b.BillDate.ToString("HH:mm"),
+                        InvoiceNo = b.BillId.ToString(),
+                        Customer = b.Customer != null ? b.Customer.CustomerName : "Walk-in",
+                        Amount = b.TotalAmount
+                    }).ToListAsync();
+            }
+
+            // ---------------- INVENTORY MANAGER ----------------
+            if (User.IsInRole("Inventory Manager"))
+            {
+                dashboard.ProductsCount = await _context.Products.CountAsync();
+                dashboard.SupplierCount = await _context.Suppliers.CountAsync();
+
+                // Low Stock
+                dashboard.LowStockProducts = await _context.Products
+                    .Where(p => (p.StockQty ?? 0) < 10)
+                    .OrderBy(p => p.StockQty)
+                    .ToListAsync();
+
+                // Expired Products
+                dashboard.ExpiredProducts = await _context.Products
+                    .Where(p => p.ExpiryDate.HasValue && p.ExpiryDate.Value < today)
+                    .OrderBy(p => p.ExpiryDate)
+                    .ToListAsync();
+
+                dashboard.RecentProducts = await _context.Products
+                    .OrderByDescending(p => p.ProductId)
+                    .Take(10)
+                    .ToListAsync();
+            }
+
+            return View(dashboard);
         }
     }
 }
