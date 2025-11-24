@@ -11,58 +11,126 @@
     <title>@ViewData["Title"] - Saksoft Supermarket</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* Navbar styling */
+        .navbar {
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+            .nav-link:hover {
+                color: #ffd700 !important;
+                transform: scale(1.05);
+            }
+
+        .dropdown-menu {
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #1e3c72 !important;
+            font-weight: 500;
+        }
+
+        .navbar-nav .nav-item + .nav-item {
+            margin-left: 1rem;
+        }
+
+        .user-badge {
+            font-weight: 500;
+            color: #fff;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 0.5rem;
+            padding: 0.2rem 0.6rem;
+        }
+    </style>
 </head>
 <body>
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" asp-controller="Dashboard" asp-action="Index">Saksoft Supermarket</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand fw-bold" asp-controller="Dashboard" asp-action="Index">
+                <i class="bi bi-shop"></i> Saksoft Supermarket
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                    aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarMenu">
                 @if (isAuthenticated)
                 {
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                <i class="bi bi-house-fill"></i> Home
+                            </a>
                         </li>
 
                         @* Admin Menu *@
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="User" asp-action="Index">Users</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">Inventory</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="User" asp-action="Index">
+                                    <i class="bi bi-people-fill"></i> Users
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Products" asp-action="Index">
+                                    <i class="bi bi-box-seam"></i> Inventory
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Sales</a>
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-bar-chart-line-fill"></i> Sales
+                                </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="DailySales" data-title="Daily Sales">Daily Sales</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="WeeklySales" data-title="Weekly Sales">Weekly Sales</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="MonthlySales" data-title="Monthly Sales">Monthly Sales</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="DailySales"><i class="bi bi-calendar-day"></i> Daily Sales</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="WeeklySales"><i class="bi bi-calendar-week"></i> Weekly Sales</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reports" asp-action="MonthlySales"><i class="bi bi-calendar3"></i> Monthly Sales</a></li>
                                 </ul>
                             </li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Reports" asp-action="Index">Reports</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Reports" asp-action="Index">
+                                    <i class="bi bi-file-earmark-bar-graph-fill"></i> Reports
+                                </a>
+                            </li>
                         }
                         @* Cashier Menu *@
                         else if (User.IsInRole("Cashier"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Billing" asp-action="Create">Billing</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index">Customers</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Billing" asp-action="Create"><i class="bi bi-receipt"></i> Billing</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index"><i class="bi bi-person-lines-fill"></i> Customers</a></li>
                         }
                         @* Inventory Manager Menu *@
                         else if (User.IsInRole("Inventory Manager"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">Products</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Supplier" asp-action="Index">Suppliers</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="StockStatus">Stock Status</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="InventoryTransaction" asp-action="Index">InventoryTransaction</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index"><i class="bi bi-boxes"></i> Products</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Supplier" asp-action="Index"><i class="bi bi-truck"></i> Suppliers</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="StockStatus"><i class="bi bi-exclamation-triangle-fill"></i> Stock Status</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="InventoryTransaction" asp-action="Index"><i class="bi bi-journal-check"></i> Inventory Logs</a></li>
                         }
                     </ul>
 
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><span class="nav-link">@userName</span></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <li class="nav-item me-2">
+                            <span class="nav-link user-badge"><i class="bi bi-person-circle"></i> @userName</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        </li>
                     </ul>
                 }
                 else

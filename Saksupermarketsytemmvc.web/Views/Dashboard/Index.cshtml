@@ -10,105 +10,127 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
 <div class="container mt-4">
-    <h2>@userRole DASHBOARD</h2>
+    <h2 class="mb-4">@userRole DASHBOARD</h2>
 
     @* ---------------- ADMIN ---------------- *@
     @if (userRole == "Admin")
     {
-        <div class="row mb-4">
+        <div class="row mb-4 g-3">
             <div class="col-md-3">
-                <div class="card p-3 text-center bg-primary text-white">
-                    Total Sales<br>₹@Model.TotalSales
+                <div class="card text-center bg-primary text-white p-3 shadow-sm">
+                    <i class="bi bi-cash-stack fs-2 mb-2"></i>
+                    <div>Total Sales</div>
+                    <h4>₹@Model.TotalSales</h4>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card p-3 text-center bg-success text-white">
-                    Customers<br>@Model.CustomerCount
+                <div class="card text-center bg-success text-white p-3 shadow-sm">
+                    <i class="bi bi-people fs-2 mb-2"></i>
+                    <div>Customers</div>
+                    <h4>@Model.CustomerCount</h4>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card p-3 text-center bg-danger text-white">
-                    Low Stock<br>@Model.LowStockCount
+                <div class="card text-center bg-danger text-white p-3 shadow-sm">
+                    <i class="bi bi-exclamation-triangle fs-2 mb-2"></i>
+                    <div>Low Stock</div>
+                    <h4>@Model.LowStockCount</h4>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card p-3 text-center bg-secondary text-white">
-                    Users<br>@Model.UserCount
+                <div class="card text-center bg-secondary text-white p-3 shadow-sm">
+                    <i class="bi bi-person-badge fs-2 mb-2"></i>
+                    <div>Users</div>
+                    <h4>@Model.UserCount</h4>
                 </div>
             </div>
         </div>
 
-        <h5>Sales Last 7 Days</h5>
-        <canvas id="salesChart" height="100"></canvas>
+        <h5 class="mt-4 mb-3">Sales Last 7 Days</h5>
+        <canvas id="salesChart" height="120"></canvas>
 
-        <h5 class="mt-4">Recent Transactions</h5>
-        <table class="table table-bordered">
-            <thead>
-                <tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Amount</th><th>Cashier</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var t in Model.RecentTransactions)
-                {
+        <h5 class="mt-5 mb-3">Recent Transactions</h5>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@t.Date</td>
-                        <td>@("INV" + t.InvoiceNo)</td>
-                        <td>@t.Customer</td>
-                        <td>₹@t.Amount</td>
-                        <td>@t.Cashier</td>
+                        <th>Date</th>
+                        <th>Invoice</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Cashier</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td>@(DateTime.TryParse(t.Date, out var dtT) ? dtT.ToString("dd/MM/yyyy") : t.Date)</td>
+                            <td>INV@(t.InvoiceNo)</td>
+                            <td>@t.Customer</td>
+                            <td>₹@t.Amount</td>
+                            <td>@t.Cashier</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
     @* ---------------- CASHIER ---------------- *@
     @if (userRole == "Cashier")
     {
-        <div class="row mb-4">
+        <div class="row mb-4 g-3">
             <div class="col-md-6">
-                <div class="card p-3 text-center bg-primary text-white">
-                    Today's Sales<br>₹@Model.TodaysSales
+                <div class="card text-center bg-primary text-white p-3 shadow-sm">
+                    <i class="bi bi-cash-stack fs-2 mb-2"></i>
+                    <div>Today's Sales</div>
+                    <h4>₹@Model.TodaysSales</h4>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card p-3 text-center bg-success text-white">
-                    Invoices Today<br>@Model.TodaysInvoices
+                <div class="card text-center bg-success text-white p-3 shadow-sm">
+                    <i class="bi bi-file-invoice fs-2 mb-2"></i>
+                    <div>Invoices Today</div>
+                    <h4>@Model.TodaysInvoices</h4>
                 </div>
             </div>
         </div>
 
         <h5>Quick Billing Panel</h5>
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="list-group">
-                    <a href="@Url.Action("Create", "Billing")" class="list-group-item list-group-item-action">
-                        1) Create New Invoice
-                    </a>
-
-                    <a href="@Url.Action("Index", "Customer")" class="list-group-item list-group-item-action">
-                        2) Search Customer
-                    </a>
-                </div>
-            </div>
+        <div class="list-group mb-4">
+            <a href="@Url.Action("Create", "Billing")" class="list-group-item list-group-item-action">
+                1) Create New Invoice
+            </a>
+            <a href="@Url.Action("Index", "Customer")" class="list-group-item list-group-item-action">
+                2) Search Customer
+            </a>
         </div>
 
         <h5>Recent Bills</h5>
-        <table class="table table-bordered">
-            <thead>
-                <tr><th>Time</th><th>Invoice</th><th>Customer</th><th>Amount</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var b in Model.RecentBills)
-                {
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@b.Date</td>
-                        <td>@("INV" + b.InvoiceNo)</td>
-                        <td>@b.Customer</td>
-                        <td>₹@b.Amount</td>
+                        <th>Time</th>
+                        <th>Invoice</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model.RecentBills)
+                    {
+                        <tr>
+                            <td>@(DateTime.TryParse(b.Date, out var dtB) ? dtB.ToString("dd/MM/yyyy HH:mm") : b.Date)</td>
+                            <td>INV@(b.InvoiceNo)</td>
+                            <td>@b.Customer</td>
+                            <td>₹@b.Amount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
     @* ---------------- INVENTORY MANAGER ---------------- *@
@@ -118,7 +140,7 @@
         @foreach (var p in Model.LowStockProducts)
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @p.Name - @p.StockQty left
+                <i class="bi bi-exclamation-circle-fill"></i> @p.Name - @p.StockQty left
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
@@ -127,46 +149,56 @@
         @foreach (var p in Model.ExpiredProducts)
         {
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                @p.Name - Expired on @p.ExpiryDate?.ToString("dd/MM/yyyy")
+                <i class="bi bi-calendar-x-fill"></i> @p.Name - Expired on @p.ExpiryDate?.ToString("dd/MM/yyyy")
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
 
-        <div class="row mb-4">
+        <div class="row mb-4 g-3">
             <div class="col-md-4">
-                <div class="card p-3 text-center bg-primary text-white">
-                    Products<br>@Model.ProductsCount
+                <div class="card text-center bg-primary text-white p-3 shadow-sm">
+                    <i class="bi bi-box-seam fs-2 mb-2"></i>
+                    <div>Products</div>
+                    <h4>@Model.ProductsCount</h4>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card p-3 text-center bg-success text-white">
-                    Suppliers<br>@Model.SupplierCount
+                <div class="card text-center bg-success text-white p-3 shadow-sm">
+                    <i class="bi bi-truck fs-2 mb-2"></i>
+                    <div>Suppliers</div>
+                    <h4>@Model.SupplierCount</h4>
                 </div>
             </div>
         </div>
 
         <h5>Recently Added Products</h5>
-        <table class="table table-bordered">
-            <thead>
-                <tr><th>Product ID</th><th>Product Name</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var p in Model.RecentProducts)
-                {
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
                     <tr>
-                        <td>@p.ProductId</td>
-                        <td>@p.Name</td>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.RecentProducts)
+                    {
+                        <tr>
+                            <td>@p.ProductId</td>
+                            <td>@p.Name</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    var ctx = document.getElementById('salesChart')?.getContext('2d');
+    const ctx = document.getElementById('salesChart')?.getContext('2d');
     if(ctx){
         new Chart(ctx, {
             type: 'line',
@@ -179,10 +211,19 @@
                     borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgba(0, 123, 255, 1)'
                 }]
             },
-            options: { responsive: true }
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: '#e9ecef' }, beginAtZero: true }
+                }
+            }
         });
     }
 </script>
