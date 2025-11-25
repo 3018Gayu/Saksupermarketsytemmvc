@@ -120,6 +120,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         // ----------------- PURCHASE HISTORY -----------------
         public async Task<IActionResult> PurchaseHistory(int id)
         {
+            //Mapping
             var customer = await _context.Customers.FindAsync(id);
             if (customer == null) return NotFound();
 

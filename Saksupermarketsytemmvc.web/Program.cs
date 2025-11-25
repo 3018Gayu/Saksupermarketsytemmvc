@@ -6,14 +6,11 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add MVC + Razor views
 builder.Services.AddControllersWithViews();
 
-// Database Context
 builder.Services.AddDbContext<SaksoftSupermarketSystemContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -23,13 +20,19 @@ builder.Services.AddAuthentication(options =>
 {
     options.Events = new JwtBearerEvents
     {
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.Redirect("/Account/LoggingOff");
+            return Task.CompletedTask;
+        },
+
         OnMessageReceived = context =>
         {
             var token = context.Request.Cookies["jwtToken"];
             if (!string.IsNullOrEmpty(token))
-            {
                 context.Token = token;
-            }
+
             return Task.CompletedTask;
         }
     };
@@ -39,8 +42,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
         ClockSkew = TimeSpan.Zero,
+        ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
@@ -48,28 +51,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add Authorization
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
-// Configure pipeline
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-// Enable Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Default route
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
