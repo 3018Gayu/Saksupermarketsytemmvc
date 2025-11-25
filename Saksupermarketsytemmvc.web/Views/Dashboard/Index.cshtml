@@ -6,43 +6,95 @@
                    User.IsInRole("Inventory Manager") ? "Inventory Manager" : "";
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<style>
+    .clickable-card {
+        cursor: pointer;
+        transition: 0.25s ease;
+    }
+
+        .clickable-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+        }
+
+    .equal-height {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .decorative-card {
+        position: relative;
+        overflow: hidden;
+    }
+
+        .decorative-card .bg-circle {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            top: -20px;
+            right: -20px;
+            z-index: 0;
+        }
+
+        .decorative-card i {
+            position: relative;
+            z-index: 1;
+        }
+</style>
 
 <div class="container mt-4">
     <h2 class="mb-4">@userRole DASHBOARD</h2>
 
-    @* ---------------- ADMIN ---------------- *@
+    @* ------------------------------ ADMIN SECTION ------------------------------ *@
     @if (userRole == "Admin")
     {
         <div class="row mb-4 g-3">
-            <div class="col-md-3">
-                <div class="card text-center bg-primary text-white p-3 shadow-sm">
+            <div class="col-md-3 d-flex">
+                <div class="card text-center bg-primary text-white p-3 shadow-sm equal-height w-100 decorative-card">
+                    <div class="bg-circle"></div>
                     <i class="bi bi-cash-stack fs-2 mb-2"></i>
                     <div>Total Sales</div>
                     <h4>₹@Model.TotalSales</h4>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center bg-success text-white p-3 shadow-sm">
-                    <i class="bi bi-people fs-2 mb-2"></i>
-                    <div>Customers</div>
-                    <h4>@Model.CustomerCount</h4>
-                </div>
+
+            <div class="col-md-3 d-flex">
+                <a asp-controller="Customer" asp-action="Index" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-success text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-people fs-2 mb-2"></i>
+                        <div>Customers</div>
+                        <h4>@Model.CustomerCount</h4>
+                    </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center bg-danger text-white p-3 shadow-sm">
-                    <i class="bi bi-exclamation-triangle fs-2 mb-2"></i>
-                    <div>Low Stock</div>
-                    <h4>@Model.LowStockCount</h4>
-                </div>
+
+            <div class="col-md-3 d-flex">
+                <a asp-controller="Products" asp-action="StockStatus" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-danger text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-exclamation-triangle fs-2 mb-2"></i>
+                        <div>Low Stock</div>
+                        <h4>@Model.LowStockCount</h4>
+                    </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="card text-center bg-secondary text-white p-3 shadow-sm">
-                    <i class="bi bi-person-badge fs-2 mb-2"></i>
-                    <div>Users</div>
-                    <h4>@Model.UserCount</h4>
-                </div>
+
+            <div class="col-md-3 d-flex">
+                <a asp-controller="User" asp-action="Index" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-secondary text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-person-badge fs-2 mb-2"></i>
+                        <div>Users</div>
+                        <h4>@Model.UserCount</h4>
+                    </div>
+                </a>
             </div>
         </div>
 
@@ -77,20 +129,23 @@
         </div>
     }
 
-    @* ---------------- CASHIER ---------------- *@
+    @* ------------------------------ CASHIER SECTION ------------------------------ *@
     @if (userRole == "Cashier")
     {
         <div class="row mb-4 g-3">
-            <div class="col-md-6">
-                <div class="card text-center bg-primary text-white p-3 shadow-sm">
+            <div class="col-md-6 d-flex">
+                <div class="card text-center bg-primary text-white p-3 shadow-sm equal-height w-100 decorative-card">
+                    <div class="bg-circle"></div>
                     <i class="bi bi-cash-stack fs-2 mb-2"></i>
                     <div>Today's Sales</div>
                     <h4>₹@Model.TodaysSales</h4>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card text-center bg-success text-white p-3 shadow-sm">
-                    <i class="bi bi-file-invoice fs-2 mb-2"></i>
+
+            <div class="col-md-6 d-flex">
+                <div class="card text-center bg-success text-white p-3 shadow-sm equal-height w-100 decorative-card">
+                    <div class="bg-circle"></div>
+                    <i class="bi bi-receipt fs-2 mb-2"></i>
                     <div>Invoices Today</div>
                     <h4>@Model.TodaysInvoices</h4>
                 </div>
@@ -133,7 +188,7 @@
         </div>
     }
 
-    @* ---------------- INVENTORY MANAGER ---------------- *@
+    @* ------------------------------ INVENTORY MANAGER SECTION ------------------------------ *@
     @if (userRole == "Inventory Manager")
     {
         <h5>Low Stock Alerts</h5>
@@ -141,7 +196,7 @@
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-circle-fill"></i> @p.Name - @p.StockQty left
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         }
 
@@ -150,24 +205,31 @@
         {
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="bi bi-calendar-x-fill"></i> @p.Name - Expired on @p.ExpiryDate?.ToString("dd/MM/yyyy")
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         }
 
         <div class="row mb-4 g-3">
-            <div class="col-md-4">
-                <div class="card text-center bg-primary text-white p-3 shadow-sm">
-                    <i class="bi bi-box-seam fs-2 mb-2"></i>
-                    <div>Products</div>
-                    <h4>@Model.ProductsCount</h4>
-                </div>
+            <div class="col-md-4 d-flex">
+                <a asp-controller="Products" asp-action="Index" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-primary text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-box-seam fs-2 mb-2"></i>
+                        <div>Products</div>
+                        <h4>@Model.ProductsCount</h4>
+                    </div>
+                </a>
             </div>
-            <div class="col-md-4">
-                <div class="card text-center bg-success text-white p-3 shadow-sm">
-                    <i class="bi bi-truck fs-2 mb-2"></i>
-                    <div>Suppliers</div>
-                    <h4>@Model.SupplierCount</h4>
-                </div>
+
+            <div class="col-md-4 d-flex">
+                <a asp-controller="Supplier" asp-action="Index" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-success text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-truck fs-2 mb-2"></i>
+                        <div>Suppliers</div>
+                        <h4>@Model.SupplierCount</h4>
+                    </div>
+                </a>
             </div>
         </div>
 
@@ -199,7 +261,7 @@
 
 <script>
     const ctx = document.getElementById('salesChart')?.getContext('2d');
-    if(ctx){
+    if (ctx) {
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -210,19 +272,9 @@
                     backgroundColor: 'rgba(0, 123, 255, 0.2)',
                     borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 2,
-                    fill: true,
                     tension: 0.3,
-                    pointRadius: 5,
-                    pointBackgroundColor: 'rgba(0, 123, 255, 1)'
+                    fill: true
                 }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top' } },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { color: '#e9ecef' }, beginAtZero: true }
-                }
             }
         });
     }
