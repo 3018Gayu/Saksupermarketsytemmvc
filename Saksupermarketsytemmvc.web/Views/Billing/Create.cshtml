@@ -9,7 +9,7 @@
     <div class="col-md-6">
         <label>Customer</label>
         <select id="customerId" class="form-control">
-            <option value="0">Walk-in</option> <!-- Default Walk-in -->
+            <option value="">Walk-in</option>
             @foreach (var cust in ViewBag.Customers as SelectList)
             {
                 <option value="@cust.Value">@cust.Text</option>
@@ -78,8 +78,8 @@
             var productId = $(this).val();
             if (productId) {
                 $.getJSON('@Url.Action("GetProductPrice")', { productId: productId }, function (price) {
-                    $('#unitPrice').val(price);
-                    $('#totalPrice').val(price);
+                    $('#unitPrice').val(price.toFixed(2));
+                    $('#totalPrice').val(price.toFixed(2));
                 });
             } else {
                 $('#unitPrice').val('');
@@ -87,25 +87,24 @@
             }
         });
 
-        // Calculate total price
+        // Calculate total price on quantity change
         $('#quantity').on('input', function () {
-            var qty = $(this).val();
-            var price = $('#unitPrice').val();
-            var total = qty * price;
-            $('#totalPrice').val(total.toFixed(2));
+            var qty = parseFloat($(this).val()) || 0;
+            var price = parseFloat($('#unitPrice').val()) || 0;
+            $('#totalPrice').val((qty * price).toFixed(2));
         });
 
         // Add item to bill
         $('#addItem').click(function () {
             var productId = $('#productId').val();
             var productName = $("#productId option:selected").text();
-            var qty = parseInt($('#quantity').val());
-            var price = parseFloat($('#unitPrice').val());
+            var qty = parseInt($('#quantity').val()) || 0;
+            var price = parseFloat($('#unitPrice').val()) || 0;
 
-            if (!productId || !qty || !price) { alert("Select product and quantity"); return; }
+            if (!productId || qty <= 0 || price <= 0) { alert("Select product and quantity"); return; }
 
             var itemTotal = qty * price;
-            billItems.push({ ProductId: productId, ProductName: productName, Quantity: qty, UnitPrice: price, Total: itemTotal });
+            billItems.push({ ProductId: parseInt(productId), ProductName: productName, Quantity: qty, UnitPrice: price, Total: itemTotal });
             refreshTable();
         });
 
@@ -133,7 +132,7 @@
 
         // Save bill
         $('#saveBill').click(function () {
-            var customerId = $('#customerId').val() || 0; // Walk-in = 0
+            var customerId = $('#customerId').val() ? parseInt($('#customerId').val()) : 0;
             var totalAmount = billItems.reduce((sum, i) => sum + i.Total, 0);
 
             if (!billItems.length) { alert("Add at least one product"); return; }

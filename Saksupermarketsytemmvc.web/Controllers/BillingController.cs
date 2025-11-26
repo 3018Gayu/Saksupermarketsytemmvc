@@ -9,7 +9,7 @@ using System;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier")]
+    [Authorize(Roles = "Cashier")]
     public class BillingController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
