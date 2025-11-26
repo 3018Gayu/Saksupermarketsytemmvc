@@ -210,7 +210,9 @@
         }
 
         <div class="row mb-4 g-3">
-            <div class="col-md-4 d-flex">
+
+            @* PRODUCTS *@
+            <div class="col-md-3 d-flex">
                 <a asp-controller="Products" asp-action="Index" class="text-decoration-none h-100 w-100">
                     <div class="card text-center bg-primary text-white p-3 shadow-sm clickable-card equal-height decorative-card">
                         <div class="bg-circle"></div>
@@ -221,7 +223,8 @@
                 </a>
             </div>
 
-            <div class="col-md-4 d-flex">
+            @* SUPPLIERS *@
+            <div class="col-md-3 d-flex">
                 <a asp-controller="Supplier" asp-action="Index" class="text-decoration-none h-100 w-100">
                     <div class="card text-center bg-success text-white p-3 shadow-sm clickable-card equal-height decorative-card">
                         <div class="bg-circle"></div>
@@ -231,6 +234,31 @@
                     </div>
                 </a>
             </div>
+
+            @* ORDERS *@
+            <div class="col-md-3 d-flex">
+                <a asp-controller="Orders" asp-action="Index" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-warning text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-receipt fs-2 mb-2"></i>
+                        <div>Orders</div>
+                        <h4>@Model.OrdersCount</h4>
+                    </div>
+                </a>
+            </div>
+
+            @* ORDER DETAILS *@
+            <div class="col-md-3 d-flex">
+                <a asp-controller="OrderDetails" asp-action="Index" class="text-decoration-none h-100 w-100">
+                    <div class="card text-center bg-info text-white p-3 shadow-sm clickable-card equal-height decorative-card">
+                        <div class="bg-circle"></div>
+                        <i class="bi bi-list-check fs-2 mb-2"></i>
+                        <div>Order Details</div>
+                        <h4>@Model.OrderDetailsCount</h4>
+                    </div>
+                </a>
+            </div>
+
         </div>
 
         <h5>Recently Added Products</h5>
@@ -272,9 +300,27 @@
                     backgroundColor: 'rgba(0, 123, 255, 0.2)',
                     borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 2,
+                    fill: true,
                     tension: 0.3,
-                    fill: true
+                    pointRadius: 5,
                 }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 100
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
             }
         });
     }

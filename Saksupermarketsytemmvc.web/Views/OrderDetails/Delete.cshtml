@@ -1,0 +1,33 @@
+﻿@model Saksupermarketsytemmvc.web.Models.OrderDetails
+
+@{
+    ViewData["Title"] = "Delete Order Detail";
+}
+
+<h2>Delete Order Detail</h2>
+
+<div class="alert alert-danger">
+    Are you sure you want to delete this order detail?
+</div>
+
+<div class="card p-3 shadow-sm">
+    <dl class="row">
+        <dt class="col-sm-3">Order</dt>
+        <dd class="col-sm-9">@Model.Order?.InvoiceNo</dd>
+
+        <dt class="col-sm-3">Product</dt>
+        <dd class="col-sm-9">@Model.Product?.Name</dd>
+
+        <dt class="col-sm-3">Quantity</dt>
+        <dd class="col-sm-9">@Model.Quantity</dd>
+
+        <dt class="col-sm-3">Total</dt>
+        <dd class="col-sm-9">@Model.TotalPrice</dd>
+    </dl>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="OrderDetailId" />
+    <button type="submit" class="btn btn-danger mt-3">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Cancel</a>
+</form>

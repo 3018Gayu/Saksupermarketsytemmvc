@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
-    [Authorize(Roles = "Admin,Cashier")]
+    [Authorize(Roles = "Admin,Cashier,Inventory Manager")]
     public class OrderDetailsController : Controller
     {
         private readonly SaksoftSupermarketSystemContext _context;
@@ -57,7 +57,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         {
             if (ModelState.IsValid)
             {
-                orderDetail.TotalPrice = orderDetail.Quantity * orderDetail.UnitPrice;
+                // DO NOT SET TotalPrice – computed by SQL Server
 
                 // Reduce product stock
                 var product = await _context.Products.FindAsync(orderDetail.ProductId);
@@ -92,7 +92,7 @@ namespace Saksupermarketsytemmvc.web.Controllers
         // POST: OrderDetails/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OrderDetailId,OrderId,ProductId,Quantity,UnitPrice,TotalPrice")] OrderDetails orderDetail)
+        public async Task<IActionResult> Edit(int id, [Bind("OrderDetailId,OrderId,ProductId,Quantity,UnitPrice")] OrderDetails orderDetail)
         {
             if (id != orderDetail.OrderDetailId) return NotFound();
 
@@ -100,7 +100,8 @@ namespace Saksupermarketsytemmvc.web.Controllers
             {
                 try
                 {
-                    orderDetail.TotalPrice = orderDetail.Quantity * orderDetail.UnitPrice;
+                    // DO NOT TOUCH TotalPrice – SQL handles it
+
                     _context.Update(orderDetail);
                     await _context.SaveChangesAsync();
                 }

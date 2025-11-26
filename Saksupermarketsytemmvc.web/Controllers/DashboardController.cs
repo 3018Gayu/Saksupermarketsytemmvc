@@ -102,6 +102,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
                     .OrderByDescending(p => p.ProductId)
                     .Take(10)
                     .ToListAsync();
+
+                // Fix: Set orders and order details counts
+                dashboard.OrdersCount = await _context.Orders.CountAsync();
+                dashboard.OrderDetailsCount = await _context.OrderDetails.CountAsync();
             }
 
             return View(dashboard);

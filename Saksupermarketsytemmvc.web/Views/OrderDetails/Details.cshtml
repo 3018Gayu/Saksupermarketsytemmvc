@@ -1,0 +1,32 @@
+﻿@model Saksupermarketsytemmvc.web.Models.OrderDetails
+
+@{
+    ViewData["Title"] = "Order Detail Info";
+}
+
+<h2>Order Detail Information</h2>
+
+<div class="card p-3 shadow-sm">
+    <dl class="row">
+        <dt class="col-sm-3">Order Detail ID</dt>
+        <dd class="col-sm-9">@Model.OrderDetailId</dd>
+
+        <dt class="col-sm-3">Order</dt>
+        <dd class="col-sm-9">@Model.Order?.InvoiceNo</dd>
+
+        <dt class="col-sm-3">Product</dt>
+        <dd class="col-sm-9">@Model.Product?.Name</dd>
+
+        <dt class="col-sm-3">Quantity</dt>
+        <dd class="col-sm-9">@Model.Quantity</dd>
+
+        <dt class="col-sm-3">Unit Price</dt>
+        <dd class="col-sm-9">@Model.UnitPrice</dd>
+
+        <dt class="col-sm-3">Total Price</dt>
+        <dd class="col-sm-9">@Model.TotalPrice</dd>
+    </dl>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.OrderDetailId" class="btn btn-warning mt-3">Edit</a>
+<a asp-action="Index" class="btn btn-secondary mt-3">Back</a>

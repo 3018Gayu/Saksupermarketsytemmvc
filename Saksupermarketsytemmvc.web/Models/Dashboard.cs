@@ -13,6 +13,8 @@ namespace Saksupermarketsytemmvc.web.Models
         public List<RecentTransactionDTO> RecentTransactions { get; set; } = new List<RecentTransactionDTO>();
         public List<string> Last7DaysLabels { get; set; } = new List<string>();
         public List<decimal> Last7DaysSales { get; set; } = new List<decimal>();
+        public int OrdersCount { get; set; }
+        public int OrderDetailsCount { get; set; }
 
         // Cashier
         public decimal TodaysSales { get; set; } = 0;

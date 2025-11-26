@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -20,10 +19,19 @@ namespace Saksupermarketsytemmvc.web.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
-            // Eagerly load Customer to prevent NullReferenceException
             var orders = await _context.Orders
                                        .Include(o => o.Customer)
+                                       .Include(o => o.OrderDetails)
+                                       .ThenInclude(od => od.Product)
                                        .ToListAsync();
+
+            foreach (var order in orders)
+            {
+                decimal total = order.OrderDetails.Sum(od => od.TotalPrice); // TotalPrice should be decimal
+                order.TotalAmount = total;
+                order.NetAmount = total + order.TaxAmount - order.Discount;
+            }
+
             return View(orders);
         }
 
@@ -34,9 +42,15 @@ namespace Saksupermarketsytemmvc.web.Controllers
 
             var order = await _context.Orders
                                       .Include(o => o.Customer)
-                                      .FirstOrDefaultAsync(m => m.OrderId == id);
+                                      .Include(o => o.OrderDetails)
+                                      .ThenInclude(od => od.Product)
+                                      .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if (order == null) return NotFound();
+
+            decimal totalAmount = order.OrderDetails.Sum(od => od.TotalPrice);
+            order.TotalAmount = totalAmount;
+            order.NetAmount = totalAmount + order.TaxAmount - order.Discount;
 
             return View(order);
         }
@@ -44,24 +58,26 @@ namespace Saksupermarketsytemmvc.web.Controllers
         // GET: Orders/Create
         public IActionResult Create()
         {
-            // Pass customers for dropdown
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName");
+            ViewBag.Customers = new SelectList(_context.Customers, "CustomerId", "CustomerName");
             return View();
         }
 
         // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CustomerId,ProductId,Quantity,UnitPrice,TotalAmount,TaxAmount,Discount,NetAmount")] Orders order)
+        public async Task<IActionResult> Create([Bind("CustomerId,OrderDate,TaxAmount,Discount")] Orders order)
         {
             if (ModelState.IsValid)
             {
+                order.TotalAmount = 0m;
+                order.NetAmount = 0m;
+
                 _context.Add(order);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
+            ViewBag.Customers = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
             return View(order);
         }
 
@@ -73,14 +89,14 @@ namespace Saksupermarketsytemmvc.web.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound();
 
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
+            ViewBag.Customers = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
             return View(order);
         }
 
         // POST: Orders/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OrderId,CustomerId,ProductId,Quantity,UnitPrice,TotalAmount,TaxAmount,Discount,NetAmount")] Orders order)
+        public async Task<IActionResult> Edit(int id, [Bind("OrderId,CustomerId,OrderDate,TaxAmount,Discount")] Orders order)
         {
             if (id != order.OrderId) return NotFound();
 
@@ -88,20 +104,34 @@ namespace Saksupermarketsytemmvc.web.Controllers
             {
                 try
                 {
-                    _context.Update(order);
-                    await _context.SaveChangesAsync();
+                    var existingOrder = await _context.Orders
+                                                      .Include(o => o.OrderDetails)
+                                                      .FirstOrDefaultAsync(o => o.OrderId == id);
+
+                    if (existingOrder != null)
+                    {
+                        existingOrder.CustomerId = order.CustomerId;
+                        existingOrder.OrderDate = order.OrderDate;
+                        existingOrder.TaxAmount = order.TaxAmount;
+                        existingOrder.Discount = order.Discount;
+
+                        decimal totalAmount = existingOrder.OrderDetails.Sum(od => od.TotalPrice);
+                        existingOrder.TotalAmount = totalAmount;
+                        existingOrder.NetAmount = totalAmount + existingOrder.TaxAmount - existingOrder.Discount;
+
+                        _context.Update(existingOrder);
+                        await _context.SaveChangesAsync();
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!OrderExists(order.OrderId))
-                        return NotFound();
-                    else
-                        throw;
+                    if (!_context.Orders.Any(e => e.OrderId == order.OrderId)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
+            ViewBag.Customers = new SelectList(_context.Customers, "CustomerId", "CustomerName", order.CustomerId);
             return View(order);
         }
 
@@ -123,10 +153,12 @@ namespace Saksupermarketsytemmvc.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                                      .Include(o => o.OrderDetails)
+                                      .FirstOrDefaultAsync(o => o.OrderId == id);
             if (order != null)
             {
-                _context.OrderDetails.RemoveRange(_context.OrderDetails.Where(od => od.OrderId == id));
+                _context.OrderDetails.RemoveRange(order.OrderDetails);
                 _context.Orders.Remove(order);
                 await _context.SaveChangesAsync();
             }
