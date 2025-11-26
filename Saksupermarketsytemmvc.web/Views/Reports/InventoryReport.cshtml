@@ -54,7 +54,7 @@
                     <td>@(item.Product?.Name ?? "N/A")</td>
                     <td>@item.Quantity</td>
                     <td>@item.Type</td>
-                    <td>@(item.Date.HasValue ? item.Date.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")</td>
+                    <td>@(item.Date.HasValue? item.Date.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")</td>
                     <td>@(item.Remarks ?? "")</td>
                 </tr>
             }

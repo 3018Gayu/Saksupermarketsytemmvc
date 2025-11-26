@@ -2,9 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Saksupermarketsytemmvc.web.Models;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Saksupermarketsytemmvc.web.Controllers
 {
@@ -41,7 +38,6 @@ namespace Saksupermarketsytemmvc.web.Controllers
                         InvoiceNo = b.BillId.ToString(),
                         Customer = b.Customer != null ? b.Customer.CustomerName : "Walk-in",
                         Amount = b.TotalAmount,
-                        Cashier = "N/A"
                     }).ToListAsync();
 
                 var salesData = await _context.Bills
