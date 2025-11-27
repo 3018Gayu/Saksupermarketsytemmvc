@@ -57,6 +57,19 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 }
             }
 
+            // ----------------- LOYALTY POINTS -----------------
+            if (bill.CustomerId.HasValue)
+            {
+                var customer = await _context.Customers.FindAsync(bill.CustomerId.Value);
+                if (customer != null)
+                {
+                    // 1 point per 10 rupees spent
+                    int pointsEarned = (int)(bill.TotalAmount / 10);
+                    customer.LoyaltyPoints += pointsEarned;
+                    _context.Customers.Update(customer);
+                }
+            }
+
             await _context.SaveChangesAsync();
             return Json(new { success = true, billId = bill.BillId });
         }
@@ -71,6 +84,10 @@ namespace Saksupermarketsytemmvc.web.Controllers
                 .FirstOrDefaultAsync(b => b.BillId == id);
 
             if (bill == null) return NotFound();
+
+            // Optional: Pass loyalty points earned in this bill to view
+            ViewBag.PointsEarned = bill.CustomerId.HasValue ? (int)(bill.TotalAmount / 10) : 0;
+
             return View(bill);
         }
     }
